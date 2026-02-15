@@ -1,0 +1,93 @@
+-J-Duser.language=
+-J-Duser.country=
+@options
+--no-fonts
+-classpath
+'/Users/tidjani/.m2/repository/org/openjfx/javafx-controls/21/javafx-controls-21.jar:/Users/tidjani/.m2/repository/org/openjfx/javafx-controls/21/javafx-controls-21-mac-aarch64.jar:/Users/tidjani/.m2/repository/org/openjfx/javafx-graphics/21/javafx-graphics-21.jar:/Users/tidjani/.m2/repository/org/openjfx/javafx-graphics/21/javafx-graphics-21-mac-aarch64.jar:/Users/tidjani/.m2/repository/org/openjfx/javafx-base/21/javafx-base-21.jar:/Users/tidjani/.m2/repository/org/openjfx/javafx-base/21/javafx-base-21-mac-aarch64.jar:/Users/tidjani/.m2/repository/org/openjfx/javafx-fxml/21/javafx-fxml-21.jar:/Users/tidjani/.m2/repository/org/openjfx/javafx-fxml/21/javafx-fxml-21-mac-aarch64.jar:/Users/tidjani/.m2/repository/io/javalin/javalin/6.7.0/javalin-6.7.0.jar:/Users/tidjani/.m2/repository/org/slf4j/slf4j-api/2.0.17/slf4j-api-2.0.17.jar:/Users/tidjani/.m2/repository/org/eclipse/jetty/jetty-server/11.0.25/jetty-server-11.0.25.jar:/Users/tidjani/.m2/repository/org/eclipse/jetty/jetty-http/11.0.25/jetty-http-11.0.25.jar:/Users/tidjani/.m2/repository/org/eclipse/jetty/jetty-util/11.0.25/jetty-util-11.0.25.jar:/Users/tidjani/.m2/repository/org/eclipse/jetty/jetty-io/11.0.25/jetty-io-11.0.25.jar:/Users/tidjani/.m2/repository/org/eclipse/jetty/toolchain/jetty-jakarta-servlet-api/5.0.2/jetty-jakarta-servlet-api-5.0.2.jar:/Users/tidjani/.m2/repository/org/eclipse/jetty/websocket/websocket-jetty-server/11.0.25/websocket-jetty-server-11.0.25.jar:/Users/tidjani/.m2/repository/org/eclipse/jetty/jetty-servlet/11.0.25/jetty-servlet-11.0.25.jar:/Users/tidjani/.m2/repository/org/eclipse/jetty/jetty-security/11.0.25/jetty-security-11.0.25.jar:/Users/tidjani/.m2/repository/org/eclipse/jetty/jetty-webapp/11.0.25/jetty-webapp-11.0.25.jar:/Users/tidjani/.m2/repository/org/eclipse/jetty/jetty-xml/11.0.25/jetty-xml-11.0.25.jar:/Users/tidjani/.m2/repository/org/eclipse/jetty/websocket/websocket-jetty-api/11.0.25/websocket-jetty-api-11.0.25.jar:/Users/tidjani/.m2/repository/org/eclipse/jetty/websocket/websocket-jetty-common/11.0.25/websocket-jetty-common-11.0.25.jar:/Users/tidjani/.m2/repository/org/eclipse/jetty/websocket/websocket-core-common/11.0.25/websocket-core-common-11.0.25.jar:/Users/tidjani/.m2/repository/org/eclipse/jetty/websocket/websocket-servlet/11.0.25/websocket-servlet-11.0.25.jar:/Users/tidjani/.m2/repository/org/eclipse/jetty/websocket/websocket-core-server/11.0.25/websocket-core-server-11.0.25.jar:/Users/tidjani/.m2/repository/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.9.25/kotlin-stdlib-jdk8-1.9.25.jar:/Users/tidjani/.m2/repository/org/jetbrains/kotlin/kotlin-stdlib/1.9.25/kotlin-stdlib-1.9.25.jar:/Users/tidjani/.m2/repository/org/jetbrains/annotations/13.0/annotations-13.0.jar:/Users/tidjani/.m2/repository/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.9.25/kotlin-stdlib-jdk7-1.9.25.jar:/Users/tidjani/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.19.1/jackson-databind-2.19.1.jar:/Users/tidjani/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.19.1/jackson-annotations-2.19.1.jar:/Users/tidjani/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.19.1/jackson-core-2.19.1.jar:/Users/tidjani/.m2/repository/org/slf4j/slf4j-simple/2.0.17/slf4j-simple-2.0.17.jar:/Users/tidjani/.m2/repository/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar:/Users/tidjani/.m2/repository/net/dv8tion/JDA/5.0.0-beta.24/JDA-5.0.0-beta.24.jar:/Users/tidjani/.m2/repository/com/neovisionaries/nv-websocket-client/2.14/nv-websocket-client-2.14.jar:/Users/tidjani/.m2/repository/com/squareup/okhttp3/okhttp/4.12.0/okhttp-4.12.0.jar:/Users/tidjani/.m2/repository/com/squareup/okio/okio/3.6.0/okio-3.6.0.jar:/Users/tidjani/.m2/repository/com/squareup/okio/okio-jvm/3.6.0/okio-jvm-3.6.0.jar:/Users/tidjani/.m2/repository/org/jetbrains/kotlin/kotlin-stdlib-common/1.9.10/kotlin-stdlib-common-1.9.10.jar:/Users/tidjani/.m2/repository/club/minnced/opus-java/1.1.1/opus-java-1.1.1.jar:/Users/tidjani/.m2/repository/club/minnced/opus-java-api/1.1.1/opus-java-api-1.1.1.jar:/Users/tidjani/.m2/repository/club/minnced/opus-java-natives/1.1.1/opus-java-natives-1.1.1.jar:/Users/tidjani/.m2/repository/org/apache/commons/commons-collections4/4.4/commons-collections4-4.4.jar'
+-encoding
+'UTF-8'
+-public
+-sourcepath
+'/Users/tidjani/Documents/GitHub/Devoir1_IFT2255/IFT2255_Implementation/src/main/java'
+-subpackages
+org.projet
+-exclude
+client.controller:client
+-author
+-bottom
+'Copyright &#169; 2025. All rights reserved.'
+-charset
+'UTF-8'
+-d
+'/Users/tidjani/Documents/GitHub/Devoir1_IFT2255/IFT2255_Implementation/target/reports/apidocs'
+-docencoding
+'UTF-8'
+-Xdoclint:none
+-doctitle
+'IFT2255_Implementation 1.0-SNAPSHOT API'
+-subpackages
+org.projet
+-use
+-version
+-windowtitle
+'IFT2255_Implementation 1.0-SNAPSHOT API'
+/Users/tidjani/.m2/repository/org/openjfx/javafx-controls/21/javafx-controls-21.jar = 1695031945000
+/Users/tidjani/.m2/repository/org/openjfx/javafx-controls/21/javafx-controls-21-mac-aarch64.jar = 1695031974000
+/Users/tidjani/.m2/repository/org/openjfx/javafx-graphics/21/javafx-graphics-21.jar = 1695032008000
+/Users/tidjani/.m2/repository/org/openjfx/javafx-graphics/21/javafx-graphics-21-mac-aarch64.jar = 1695032021000
+/Users/tidjani/.m2/repository/org/openjfx/javafx-base/21/javafx-base-21.jar = 1695031918000
+/Users/tidjani/.m2/repository/org/openjfx/javafx-base/21/javafx-base-21-mac-aarch64.jar = 1695031933000
+/Users/tidjani/.m2/repository/org/openjfx/javafx-fxml/21/javafx-fxml-21.jar = 1695031980000
+/Users/tidjani/.m2/repository/org/openjfx/javafx-fxml/21/javafx-fxml-21-mac-aarch64.jar = 1695031981000
+/Users/tidjani/.m2/repository/io/javalin/javalin/6.7.0/javalin-6.7.0.jar = 1750610974000
+/Users/tidjani/.m2/repository/org/slf4j/slf4j-api/2.0.17/slf4j-api-2.0.17.jar = 1740501792000
+/Users/tidjani/.m2/repository/org/eclipse/jetty/jetty-server/11.0.25/jetty-server-11.0.25.jar = 1741825002000
+/Users/tidjani/.m2/repository/org/eclipse/jetty/jetty-http/11.0.25/jetty-http-11.0.25.jar = 1741824981000
+/Users/tidjani/.m2/repository/org/eclipse/jetty/jetty-util/11.0.25/jetty-util-11.0.25.jar = 1741824964000
+/Users/tidjani/.m2/repository/org/eclipse/jetty/jetty-io/11.0.25/jetty-io-11.0.25.jar = 1741824975000
+/Users/tidjani/.m2/repository/org/eclipse/jetty/toolchain/jetty-jakarta-servlet-api/5.0.2/jetty-jakarta-servlet-api-5.0.2.jar = 1611672684000
+/Users/tidjani/.m2/repository/org/eclipse/jetty/websocket/websocket-jetty-server/11.0.25/websocket-jetty-server-11.0.25.jar = 1741825073000
+/Users/tidjani/.m2/repository/org/eclipse/jetty/jetty-servlet/11.0.25/jetty-servlet-11.0.25.jar = 1741825026000
+/Users/tidjani/.m2/repository/org/eclipse/jetty/jetty-security/11.0.25/jetty-security-11.0.25.jar = 1741825007000
+/Users/tidjani/.m2/repository/org/eclipse/jetty/jetty-webapp/11.0.25/jetty-webapp-11.0.25.jar = 1741825040000
+/Users/tidjani/.m2/repository/org/eclipse/jetty/jetty-xml/11.0.25/jetty-xml-11.0.25.jar = 1741824989000
+/Users/tidjani/.m2/repository/org/eclipse/jetty/websocket/websocket-jetty-api/11.0.25/websocket-jetty-api-11.0.25.jar = 1741825055000
+/Users/tidjani/.m2/repository/org/eclipse/jetty/websocket/websocket-jetty-common/11.0.25/websocket-jetty-common-11.0.25.jar = 1741825063000
+/Users/tidjani/.m2/repository/org/eclipse/jetty/websocket/websocket-core-common/11.0.25/websocket-core-common-11.0.25.jar = 1741825060000
+/Users/tidjani/.m2/repository/org/eclipse/jetty/websocket/websocket-servlet/11.0.25/websocket-servlet-11.0.25.jar = 1741825069000
+/Users/tidjani/.m2/repository/org/eclipse/jetty/websocket/websocket-core-server/11.0.25/websocket-core-server-11.0.25.jar = 1741825067000
+/Users/tidjani/.m2/repository/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.9.25/kotlin-stdlib-jdk8-1.9.25.jar = 1721379501000
+/Users/tidjani/.m2/repository/org/jetbrains/kotlin/kotlin-stdlib/1.9.25/kotlin-stdlib-1.9.25.jar = 1721379499000
+/Users/tidjani/.m2/repository/org/jetbrains/annotations/13.0/annotations-13.0.jar = 1387282242000
+/Users/tidjani/.m2/repository/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.9.25/kotlin-stdlib-jdk7-1.9.25.jar = 1721379487000
+/Users/tidjani/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.19.1/jackson-databind-2.19.1.jar = 1749863635000
+/Users/tidjani/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.19.1/jackson-annotations-2.19.1.jar = 1749862941000
+/Users/tidjani/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.19.1/jackson-core-2.19.1.jar = 1749863268000
+/Users/tidjani/.m2/repository/org/slf4j/slf4j-simple/2.0.17/slf4j-simple-2.0.17.jar = 1740501810000
+/Users/tidjani/.m2/repository/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar = 1673019840000
+/Users/tidjani/.m2/repository/net/dv8tion/JDA/5.0.0-beta.24/JDA-5.0.0-beta.24.jar = 1715525876000
+/Users/tidjani/.m2/repository/com/neovisionaries/nv-websocket-client/2.14/nv-websocket-client-2.14.jar = 1615855178000
+/Users/tidjani/.m2/repository/com/squareup/okhttp3/okhttp/4.12.0/okhttp-4.12.0.jar = 1697509437000
+/Users/tidjani/.m2/repository/com/squareup/okio/okio/3.6.0/okio-3.6.0.jar = 1696213723000
+/Users/tidjani/.m2/repository/com/squareup/okio/okio-jvm/3.6.0/okio-jvm-3.6.0.jar = 1696213713000
+/Users/tidjani/.m2/repository/org/jetbrains/kotlin/kotlin-stdlib-common/1.9.10/kotlin-stdlib-common-1.9.10.jar = 1692781294000
+/Users/tidjani/.m2/repository/club/minnced/opus-java/1.1.1/opus-java-1.1.1.jar = 1638198232000
+/Users/tidjani/.m2/repository/club/minnced/opus-java-api/1.1.1/opus-java-api-1.1.1.jar = 1638198756000
+/Users/tidjani/.m2/repository/club/minnced/opus-java-natives/1.1.1/opus-java-natives-1.1.1.jar = 1638198767000
+/Users/tidjani/.m2/repository/org/apache/commons/commons-collections4/4.4/commons-collections4-4.4.jar = 1562350217000
+/Users/tidjani/Documents/GitHub/Devoir1_IFT2255/IFT2255_Implementation/src/main/java = 1766981778639
+/Users/tidjani/Documents/GitHub/Devoir1_IFT2255/IFT2255_Implementation/target/reports/apidocs/tag-search-index.js = 1766981916080
+/Users/tidjani/Documents/GitHub/Devoir1_IFT2255/IFT2255_Implementation/target/reports/apidocs/overview-tree.html = 1766981916069
+/Users/tidjani/Documents/GitHub/Devoir1_IFT2255/IFT2255_Implementation/target/reports/apidocs/module-search-index.js = 1766981916079
+/Users/tidjani/Documents/GitHub/Devoir1_IFT2255/IFT2255_Implementation/target/reports/apidocs/index.html = 1766981916070
+/Users/tidjani/Documents/GitHub/Devoir1_IFT2255/IFT2255_Implementation/target/reports/apidocs/package-search-index.js = 1766981916079
+/Users/tidjani/Documents/GitHub/Devoir1_IFT2255/IFT2255_Implementation/target/reports/apidocs/serialized-form.html = 1766981916039
+/Users/tidjani/Documents/GitHub/Devoir1_IFT2255/IFT2255_Implementation/target/reports/apidocs/index-all.html = 1766981916090
+/Users/tidjani/Documents/GitHub/Devoir1_IFT2255/IFT2255_Implementation/target/reports/apidocs/allpackages-index.html = 1766981916079
+/Users/tidjani/Documents/GitHub/Devoir1_IFT2255/IFT2255_Implementation/target/reports/apidocs/member-search-index.js = 1766981916080
+/Users/tidjani/Documents/GitHub/Devoir1_IFT2255/IFT2255_Implementation/target/reports/apidocs/overview-summary.html = 1766981916091
+/Users/tidjani/Documents/GitHub/Devoir1_IFT2255/IFT2255_Implementation/target/reports/apidocs/help-doc.html = 1766981916092
+/Users/tidjani/Documents/GitHub/Devoir1_IFT2255/IFT2255_Implementation/target/reports/apidocs/element-list = 1766981916024
+/Users/tidjani/Documents/GitHub/Devoir1_IFT2255/IFT2255_Implementation/target/reports/apidocs/search.html = 1766981916090
+/Users/tidjani/Documents/GitHub/Devoir1_IFT2255/IFT2255_Implementation/target/reports/apidocs/allclasses-index.html = 1766981916078
+/Users/tidjani/Documents/GitHub/Devoir1_IFT2255/IFT2255_Implementation/target/reports/apidocs/type-search-index.js = 1766981916079

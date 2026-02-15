@@ -1,0 +1,6 @@
+org.projet
+org.projet.controller
+org.projet.exception
+org.projet.model
+org.projet.repository
+org.projet.service

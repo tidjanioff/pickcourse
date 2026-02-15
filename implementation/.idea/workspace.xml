@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="65307c7f-963f-44d3-8a04-367c1c1d96c7" name="Changes" comment="Test pour les CI">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;musa223-ui&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/andY-bee-ux/Devoir1_IFT2255.git&quot;,
+    &quot;accountId&quot;: &quot;e3aaab5c-8036-4b45-814f-388d627e4904&quot;
+  }
+}</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="35rA2WI4LHV5VNiRVK3AELs7ND0" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.All in IFT2255_Implementation.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.AvisControllerTest.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.CoursControllerTest.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.CoursControllerTest.testComparerCombinaisonCours_singleCombination.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.CoursControllerTest.testComparerCours_withInvalidCriteria.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.CoursControllerTest.testComparerCours_withValidCriteria.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.CoursRepositoryTest.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.CoursRepositoryTest.testGetCoursByIdCoursIFT1025.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.CoursServiceTest.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.CoursServiceTest.testCheckEligibilityEligible.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.CoursServiceTest.testComparerCoursCoursInexistant.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.CoursServiceTest.testComparerCoursExistants.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.CoursTest.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.ResultatsTest.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.RouteTest.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.UserTest.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;onboarding.tips.debug.path&quot;: &quot;C:/Users/nashs/Devoir1_IFT2255/IFT2255_Implementation/src/main/java/org/example/Main.java&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RunManager" selected="Application.Main">
+    <configuration name="Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="org.projet.Main" />
+      <module name="IFT2255_Implementation" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.projet.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="CoursControllerTest.testComparerCombinaisonCours_singleCombination" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="IFT2255_Implementation" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.projet.controller.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="org.projet.controller" />
+      <option name="MAIN_CLASS_NAME" value="org.projet.controller.CoursControllerTest" />
+      <option name="METHOD_NAME" value="testComparerCombinaisonCours_singleCombination" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="CoursRepositoryTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="IFT2255_Implementation" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.projet.repository.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="org.projet.repository" />
+      <option name="MAIN_CLASS_NAME" value="org.projet.repository.CoursRepositoryTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="CoursServiceTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="IFT2255_Implementation" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.projet.service.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="org.projet.service" />
+      <option name="MAIN_CLASS_NAME" value="org.projet.service.CoursServiceTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="UserTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="IFT2255_Implementation" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.projet.model.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="org.projet.model" />
+      <option name="MAIN_CLASS_NAME" value="org.projet.model.UserTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.Main" />
+        <item itemvalue="JUnit.CoursControllerTest.testComparerCombinaisonCours_singleCombination" />
+        <item itemvalue="JUnit.CoursServiceTest" />
+        <item itemvalue="JUnit.CoursRepositoryTest" />
+        <item itemvalue="JUnit.UserTest" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-26cb7f24e5b0-intellij.indexing.shared.core-IU-253.29346.138" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="65307c7f-963f-44d3-8a04-367c1c1d96c7" name="Changes" comment="" />
+      <created>1763857614668</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1763857614668</updated>
+      <workItem from="1764728101716" duration="7258000" />
+    </task>
+    <task id="LOCAL-00001" summary="Ajouts des classes de tests avec une methode vide.">
+      <option name="closed" value="true" />
+      <created>1763863793473</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1763863793473</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Ajouts de codes dans les classes du fichier /model.">
+      <option name="closed" value="true" />
+      <created>1763904906763</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1763904906763</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Ajout de codes dans les classes du fichiers /controller.">
+      <option name="closed" value="true" />
+      <created>1763906585088</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1763906585088</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Ajout de codes dans les classes du fichiers /service.">
+      <option name="closed" value="true" />
+      <created>1763908614115</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1763908614115</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Ajout de la fonctionnalite de recherche de programme par nom.">
+      <option name="closed" value="true" />
+      <created>1766683261870</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1766683261870</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Ajout de la generation de rapport dans le pom.xml + code fixe pour eviter l'arret du serveur lors d'un mauvais usage des routes.">
+      <option name="closed" value="true" />
+      <created>1766725246966</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1766725246966</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Fix des bugs">
+      <option name="closed" value="true" />
+      <created>1766726053798</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1766726053798</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Test pour les CI">
+      <option name="closed" value="true" />
+      <created>1766726275789</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1766726275789</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Ajouts des classes de tests avec une methode vide." />
+    <MESSAGE value="Ajouts de codes dans les classes du fichier /model." />
+    <MESSAGE value="Ajout de codes dans les classes du fichiers /controller." />
+    <MESSAGE value="Ajout de codes dans les classes du fichiers /service." />
+    <MESSAGE value="Ajout de la fonctionnalite de recherche de programme par nom." />
+    <MESSAGE value="Ajout de la generation de rapport dans le pom.xml + code fixe pour eviter l'arret du serveur lors d'un mauvais usage des routes." />
+    <MESSAGE value="Fix des bugs" />
+    <MESSAGE value="Test pour les CI" />
+    <option name="LAST_COMMIT_MESSAGE" value="Test pour les CI" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-method">
+          <url>file://$PROJECT_DIR$/src/test/java/org/projet/controller/CoursControllerTest.java</url>
+          <line>206</line>
+          <properties class="org.projet.controller.CoursControllerTest">
+            <option name="EMULATED" value="true" />
+            <option name="WATCH_EXIT" value="false" />
+          </properties>
+          <option name="timeStamp" value="9" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/test/java/org/projet/controller/CoursControllerTest.java</url>
+          <line>206</line>
+          <option name="timeStamp" value="10" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>
