@@ -5,6 +5,11 @@
 PickCourse est une **plateforme d'aide au choix de cours** destinée aux étudiants de l'Université de Montréal.  
 Elle est accessible via une **API REST** (backend Java) et une **interface graphique** (JavaFX).
 
+<p align="center">
+  <img src="docs/images/pickCourseLogo.png" alt="PickCourse Logo" height="120">
+</p>
+
+
 La plateforme combine :
 
 - des **données officielles** (ex. informations et horaires issus de l'API Planifium, résultats académiques),
