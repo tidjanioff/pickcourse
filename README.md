@@ -6,7 +6,7 @@ PickCourse est une **plateforme d'aide au choix de cours** destinée aux étudia
 Elle est accessible via une **API REST** (backend Java) et une **interface graphique** (JavaFX).
 
 <p align="center">
-  <img src="docs/images/pickCourseLogo.png" alt="PickCourse Logo" height="120">
+  <img src="docs/images/pickCourseLogo.png" alt="PickCourse Logo" height="150">
 </p>
 
 
