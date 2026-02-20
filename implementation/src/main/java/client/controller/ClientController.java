@@ -14,7 +14,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
-import javafx.scene.control.ScrollPane;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -600,6 +599,8 @@ public class ClientController {
         tableComparaison.setPrefHeight(600);
         tableComparaison.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
 
+        tableComparaison.setPlaceholder(new Label("Aucune comparaison à afficher. Sélectionnez des cours + critères puis cliquez sur Comparer."));
+
         messageResultatAcademique.setWrapText(true);
         messageResultatAcademique.setStyle("-fx-padding: 8;-fx-text-fill: black;-fx-font-style: italic;");
 
@@ -613,16 +614,13 @@ public class ClientController {
         });
 
         innerBox.getChildren().addAll(
-                title,
-                modeBox,
-                vueComparaisonCours,
-                vueComparaisonEnsembles,
-                tableComparaison,
-                messageResultatAcademique,
-                messageResultatAcademiquePopularite,
-                messageResultatAcademiqueDifficulte,
-                messageAvisInofficiels
+        title,
+        modeBox,
+        vueComparaisonCours,
+        vueComparaisonEnsembles,
+        tableComparaison
         );
+
 
         return comparaisonBox;
     }
@@ -782,127 +780,145 @@ public class ClientController {
 
     private void lancerComparaison() {
 
-        List<String> cours = listeCoursComparaison.getItems();
+        
+    List<String> cours = listeCoursComparaison.getItems();
 
-        List<String> criteresSelectionnes = criteresBox.getChildren().stream()
-                .filter(node -> node instanceof CheckBox cb && cb.isSelected())
-                .map(node -> ((CheckBox) node).getText())
-                .toList();
+    List<String> criteresSelectionnes = criteresBox.getChildren().stream()
+            .filter(node -> node instanceof CheckBox cb && cb.isSelected())
+            .map(node -> ((CheckBox) node).getText())
+            .toList();
 
-        // Reset messages
-        messageLabel.setText("");
-        messageResultatAcademique.setText("");
+    messageLabel.setText("");
 
-        if (cours.isEmpty() || criteresSelectionnes.isEmpty()) {
-            messageLabel.setText("Veuillez sélectionner au moins un cours et un critère.");
-            return;
-        }
+    if (cours.isEmpty() || criteresSelectionnes.isEmpty()) {
+        messageLabel.setText("Veuillez sélectionner au moins un cours et un critère.");
+        return;
+    }
 
-        // critères officiels
-        if (cours.size() == 2) { // comparerCoursParResultats ne gère que 2 cours
-            try {
-                String json = coursService.comparerCoursParResultats(cours.get(0), cours.get(1));
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode root = mapper.readTree(json);
+    // 1) Reset tableau
+    tableComparaison.getItems().clear();
+    tableComparaison.getColumns().clear();
 
-                StringBuilder resultText1 = new StringBuilder();
-                StringBuilder resultText2 = new StringBuilder();
+    // 2) Colonne Cours (toujours)
+    TableColumn<ObservableList<String>, String> colCours = new TableColumn<>("Cours");
+    colCours.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().get(0)));
+    tableComparaison.getColumns().add(colCours);
 
+    // 3) Préparer les colonnes selon les critères choisis
+    // On garde l’ordre de sélection
+    List<String> criteresDansTable = new ArrayList<>(criteresSelectionnes);
 
-                if (criteresSelectionnes.contains("popularité officielle")) {
-                    String popularite = root.has("popularite")
-                            ? root.get("popularite").asText()
-                            : "Information non disponible pour la popularité de ce cours.";
+    for (int i = 0; i < criteresDansTable.size(); i++) {
+        final int idx = i + 1; // +1 car colonne 0 = cours
+        String crit = criteresDansTable.get(i);
 
-                    resultText1.append("Popularité officielle : ").append(popularite).append("\n");
-                }
+        TableColumn<ObservableList<String>, String> col = new TableColumn<>(crit);
+        col.setCellValueFactory(data -> {
+            ObservableList<String> row = data.getValue();
+            return new SimpleStringProperty(idx < row.size() ? row.get(idx) : "");
+        });
+        tableComparaison.getColumns().add(col);
+    }
 
-                if (criteresSelectionnes.contains("difficulté officielle")) {
-                    String difficulte = root.has("difficulte")
-                            ? root.get("difficulte").asText()
-                            : "Information non disponible pour la difficulté de ce cours.";
-                    resultText2.append("Difficulté officielle : ").append(difficulte).append("\n");
-                }
+    // 4) Créer une "matrice" : 1 ligne par cours
+    // row = [coursId, valCrit1, valCrit2, ...]
+    List<ObservableList<String>> rows = new ArrayList<>();
 
-                messageResultatAcademiquePopularite.setText(resultText1.toString());
-                messageResultatAcademiqueDifficulte.setText(resultText2.toString());
+    for (String idCours : cours) {
+        ObservableList<String> row = FXCollections.observableArrayList();
+        row.add(idCours);
 
-            } catch (Exception e) {
-                messageResultatAcademique.setText("Impossible d’obtenir la comparaison officielle.");
-            }
-        } else if (criteresSelectionnes.contains("popularité officielle") || criteresSelectionnes.contains("difficulté officielle")) {
-            messageResultatAcademique.setText("Les critères officiels nécessitent exactement deux cours.");
-        }
+        // placeholders pour chaque critère, rempli ensuite
+        for (int i = 0; i < criteresDansTable.size(); i++) row.add("");
 
-       // critères non officiels ( basés sur les avis)
-        boolean difficulteInoff = criteresSelectionnes.contains("difficulté inofficielle");
-        boolean chargeInoff = criteresSelectionnes.contains("charge de travail inofficielle");
+        rows.add(row);
+    }
 
-        if (difficulteInoff || chargeInoff) {
-            String[] ids = cours.toArray(new String[0]);
-            afficherResultatsInofficiels(ids, difficulteInoff, chargeInoff);
+    // 5) Remplir les valeurs
+    // a) Catalogue : on appelle comparerCours(...) uniquement si au moins un critère "catalogue" est sélectionné
+    List<String> criteresCatalogue = criteresDansTable.stream()
+            .filter(c -> !c.equals("popularité officielle")
+                    && !c.equals("difficulté officielle")
+                    && !c.equals("difficulté inofficielle")
+                    && !c.equals("charge de travail inofficielle"))
+            .toList();
 
-        }
-
-        // critères basés sur le "catalogue"
-        List<String> criteresTable = criteresSelectionnes.stream()
-                .filter(c -> !c.equals("popularité officielle")
-                        && !c.equals("difficulté officielle")
-                        && !c.equals("difficulté inofficielle")
-                        && !c.equals("charge de travail inofficielle"))
-                .toList();
-
-        if (criteresTable.isEmpty()) {
-            tableComparaison.getItems().clear();
-            tableComparaison.getColumns().clear();
-            return;
-        }
-
-        List<List<String>> resultat = coursService.comparerCours(
+    if (!criteresCatalogue.isEmpty()) {
+        List<List<String>> resultatCatalogue = coursService.comparerCours(
                 cours.toArray(new String[0]),
-                criteresTable.toArray(new String[0]),
+                criteresCatalogue.toArray(new String[0]),
                 sessionField.getText().trim().isEmpty() ? null : sessionField.getText().trim()
         );
 
-        if (resultat == null || resultat.isEmpty()) {
-            messageLabel.setText("Aucun résultat de comparaison.");
-            return;
+        // resultatCatalogue: chaque row = [sigle, valCritCatalogue1, valCritCatalogue2, ...] dans l’ordre de criteresCatalogue
+        // On doit mapper ces valeurs dans les bonnes colonnes globales (criteresDansTable)
+        for (List<String> r : resultatCatalogue) {
+            if (r.isEmpty()) continue;
+            String sigle = r.get(0);
+
+            int rowIndex = cours.indexOf(sigle);
+            if (rowIndex < 0) continue;
+
+            ObservableList<String> targetRow = rows.get(rowIndex);
+
+            for (int j = 0; j < criteresCatalogue.size(); j++) {
+                String crit = criteresCatalogue.get(j);
+                int globalIdx = criteresDansTable.indexOf(crit); // index dans la table globale
+                if (globalIdx >= 0 && (j + 1) < r.size()) {
+                    targetRow.set(globalIdx + 1, r.get(j + 1)); // +1 car cours en 0
+                }
+            }
         }
+    }
 
-        tableComparaison.getColumns().clear();
+    // b) Officiel : seulement si 2 cours
+    if (cours.size() == 2 && (criteresDansTable.contains("popularité officielle") || criteresDansTable.contains("difficulté officielle"))) {
+        try {
+            String json = coursService.comparerCoursParResultats(cours.get(0), cours.get(1));
+            JsonNode root = new ObjectMapper().readTree(json);
 
-        /* Colonne Cours */
-        TableColumn<ObservableList<String>, String> colCours =
-                new TableColumn<>("Cours");
-        colCours.setCellValueFactory(data ->
-                new SimpleStringProperty(data.getValue().get(0))
-        );
-        tableComparaison.getColumns().add(colCours);
+            String popularite = root.has("popularite") ? root.get("popularite").asText() : "N/A";
+            String difficulte = root.has("difficulte") ? root.get("difficulte").asText() : "N/A";
 
-        // colonnes de critères.
-        for (int i = 0; i < criteresTable.size(); i++) {
-            final int idx = i + 1; //  +1 à cause du sigle en position 0
+            if (criteresDansTable.contains("popularité officielle")) {
+                int cIdx = criteresDansTable.indexOf("popularité officielle");
+                rows.get(0).set(cIdx + 1, popularite);
+                rows.get(1).set(cIdx + 1, popularite);
+            }
+            if (criteresDansTable.contains("difficulté officielle")) {
+                int cIdx = criteresDansTable.indexOf("difficulté officielle");
+                rows.get(0).set(cIdx + 1, difficulte);
+                rows.get(1).set(cIdx + 1, difficulte);
+            }
 
-            TableColumn<ObservableList<String>, String> column =
-                    new TableColumn<>(criteresTable.get(i));
+        } catch (Exception ignored) {}
+    }
 
-            column.setCellValueFactory(data -> {
-                ObservableList<String> row = data.getValue();
-                return new SimpleStringProperty(
-                        idx < row.size() ? row.get(idx) : ""
-                );
-            });
+    // c) Avis (inofficiel)
+    if (criteresDansTable.contains("difficulté inofficielle")) {
+        String[] ids = cours.toArray(new String[0]);
+        List<List<String>> diffAvis = coursService.getDifficulteAvis(ids);
 
-            tableComparaison.getColumns().add(column);
+        int cIdx = criteresDansTable.indexOf("difficulté inofficielle");
+        for (int i = 0; i < Math.min(rows.size(), diffAvis.size()); i++) {
+            String val = diffAvis.get(i).isEmpty() ? "Aucune donnée" : String.join(", ", diffAvis.get(i));
+            rows.get(i).set(cIdx + 1, val);
         }
+    }
 
-        /* Données */
-        ObservableList<ObservableList<String>> data = FXCollections.observableArrayList();
-        for (List<String> row : resultat) {
-            data.add(FXCollections.observableArrayList(row));
+    if (criteresDansTable.contains("charge de travail inofficielle")) {
+        String[] ids = cours.toArray(new String[0]);
+        List<List<String>> chargeAvis = coursService.getChargeDeTravailAvis(ids);
+
+        int cIdx = criteresDansTable.indexOf("charge de travail inofficielle");
+        for (int i = 0; i < Math.min(rows.size(), chargeAvis.size()); i++) {
+            String val = chargeAvis.get(i).isEmpty() ? "Aucune donnée" : String.join(", ", chargeAvis.get(i));
+            rows.get(i).set(cIdx + 1, val);
         }
+    }
 
-        tableComparaison.setItems(data);
+    // 6) Mettre les lignes dans le tableau
+    tableComparaison.setItems(FXCollections.observableArrayList(rows));
 
     }
 
