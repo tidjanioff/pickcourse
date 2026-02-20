@@ -10,6 +10,8 @@ Elle est accessible via une **API REST** (backend Java) et une **interface graph
 </p>
 
 
+
+
 La plateforme combine :
 
 - des **données officielles** (ex. informations et horaires issus de l'API Planifium, résultats académiques),
@@ -25,6 +27,13 @@ L'objectif est d'aider les étudiants à faire des **choix de cours éclairés**
 - consulter et soumettre des avis étudiants,
 - générer un horaire pour un ensemble de cours et détecter les conflits,
 - afficher l'horaire d'un cours pour une session spécifique.
+
+---
+## Vidéo de démonstration
+
+Une démonstration complète présentant l’API REST et l’interface graphique JavaFX :
+
+[![Video Demo](https://img.shields.io/badge/Watch-Video%20Demo-red?style=for-the-badge&logo=youtube)](https://lien-vers-ta-video.com)
 
 ---
 
