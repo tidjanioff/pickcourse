@@ -33,7 +33,7 @@ L'objectif est d'aider les étudiants à faire des **choix de cours éclairés**
 
 Une démonstration complète présentant l’API REST et l’interface graphique JavaFX :
 
-[![Video Demo](https://img.shields.io/badge/Watch-Video%20Demo-red?style=for-the-badge&logo=youtube)](https://lien-vers-ta-video.com)
+[![Video Demo](https://img.shields.io/badge/Watch-Video%20Demo-red?style=for-the-badge&logo=youtube)](https://youtu.be/AL3vs1haIUE)
 
 ---
 
