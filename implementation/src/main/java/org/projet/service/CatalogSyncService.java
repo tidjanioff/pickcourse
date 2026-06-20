@@ -15,7 +15,9 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -51,21 +53,41 @@ public class CatalogSyncService {
         try {
             JsonNode programs = fetchProgramsRaw();
             SyncCounts counts = syncFromLivePrograms(programs);
-
             long millis = Duration.between(start, Instant.now()).toMillis();
-            LOGGER.info("Catalog sync completed: programs=" + counts.programs
-                    + ", courses=" + counts.courses
-                    + ", schedules=" + counts.schedules
+            LOGGER.info("Program sync completed: programs=" + counts.programs
                     + ", durationMs=" + millis);
-            if (counts.programs == 0 || counts.courses == 0) {
+            if (counts.programs == 0) {
                 LOGGER.warning("Catalog sync completed with missing data: programs=" + counts.programs
-                        + ", courses=" + counts.courses
-                        + ", schedules=" + counts.schedules
-                        + ", durationMs=" + millis);
+                        + ", courses=0, schedules=0, durationMs=" + millis);
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Catalog sync failed", e);
             seedFallbackIfCacheEmpty(e);
+        }
+
+        List<Cours> directCourses = new ArrayList<>();
+        try {
+            directCourses = syncDirectCourses(fetchCoursesRaw());
+            long millis = Duration.between(start, Instant.now()).toMillis();
+            LOGGER.info("Direct courses sync completed: " + directCourses.size() + " courses upserted");
+            if (directCourses.isEmpty()) {
+                LOGGER.warning("Direct courses sync completed with zero courses upserted, durationMs=" + millis);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Direct courses sync failed", e);
+        }
+
+        try {
+            int scheduleCount = syncSchedulesForDirectCourses(directCourses);
+            long millis = Duration.between(start, Instant.now()).toMillis();
+            LOGGER.info("Schedule sync completed: " + scheduleCount
+                    + " schedules upserted across " + directCourses.size() + " courses");
+            if (scheduleCount == 0) {
+                LOGGER.warning("Schedule sync completed with zero schedules upserted across "
+                        + directCourses.size() + " courses, durationMs=" + millis);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Schedule sync failed", e);
         }
     }
 
@@ -112,6 +134,24 @@ public class CatalogSyncService {
         }
 
         return Optional.of(mapper.treeToValue(root, Cours.class));
+    }
+
+    public JsonNode fetchCoursesRaw() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(buildUri("/courses", null))
+                .build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        String body = response.body();
+        if (response.statusCode() != 200) {
+            throw new IllegalStateException("Planifium courses status: " + response.statusCode()
+                    + ", body: " + body);
+        }
+
+        JsonNode courses = mapper.readTree(body);
+        if (!courses.isArray()) {
+            throw new IllegalStateException("Planifium courses response must be a JSON array, got: " + body);
+        }
+        return courses;
     }
 
     public Optional<Cours.Schedule> fetchScheduleFromPlanifium(String courseId, String semester) {
@@ -193,6 +233,53 @@ public class CatalogSyncService {
         }
 
         return counts;
+    }
+
+    private List<Cours> syncDirectCourses(JsonNode courses) throws Exception {
+        List<Cours> directCourses = new ArrayList<>();
+        for (JsonNode courseNode : courses) {
+            try {
+                Cours course = mapper.treeToValue(courseNode, Cours.class);
+                cacheRepository.upsertCourse(course);
+                directCourses.add(course);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Skipping malformed direct course payload: " + courseNode, e);
+            }
+        }
+        return directCourses;
+    }
+
+    private int syncSchedulesForDirectCourses(List<Cours> directCourses) {
+        int schedulesSynced = 0;
+
+        for (Cours directCourse : directCourses) {
+            try {
+                Optional<Cours> detailedCourseOpt = fetchCourseFromPlanifium(directCourse.getId(), true);
+                if (detailedCourseOpt.isEmpty()) {
+                    LOGGER.warning("Skipping schedule sync for course " + directCourse.getId()
+                            + ": unable to load detailed course data");
+                    continue;
+                }
+
+                Cours detailedCourse = detailedCourseOpt.get();
+                if (detailedCourse.getSchedules() == null || detailedCourse.getSchedules().isEmpty()) {
+                    LOGGER.warning("Skipping schedule sync for course " + directCourse.getId()
+                            + ": no schedules returned by Planifium");
+                    continue;
+                }
+
+                for (Cours.Schedule schedule : detailedCourse.getSchedules()) {
+                    Cours.Schedule freshSchedule = fetchScheduleFromPlanifium(directCourse.getId(), schedule.getSemester())
+                            .orElse(schedule);
+                    cacheRepository.upsertSchedule(directCourse.getId(), freshSchedule);
+                    schedulesSynced++;
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Unable to sync schedules for course " + directCourse.getId(), e);
+            }
+        }
+
+        return schedulesSynced;
     }
 
     private void seedFallbackIfCacheEmpty(Exception syncFailure) {

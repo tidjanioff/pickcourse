@@ -48,7 +48,7 @@ class CatalogSyncServiceTest {
         cacheRepository = new CatalogCacheRepository(jdbi);
         coursRepository = new CoursRepository(cacheRepository);
 
-        server = startPlanifiumStub(validProgramsResponse());
+        server = startPlanifiumStub(validProgramsResponse(), directCoursesResponseSingle());
         System.setProperty("planifium.base", "http://localhost:" + server.getAddress().getPort());
 
         new CatalogSyncService(cacheRepository).syncAll();
@@ -81,7 +81,7 @@ class CatalogSyncServiceTest {
                   "status_code": 500,
                   "detail": "validation error"
                 }
-                """);
+                """, directCoursesResponseSingle());
         System.setProperty("planifium.base", "http://localhost:" + server.getAddress().getPort());
 
         IllegalStateException exception = assertThrows(
@@ -98,15 +98,21 @@ class CatalogSyncServiceTest {
     void syncAllUtiliseLeSeedLocalSiPlanifiumEchoueEtCacheVide() throws Exception {
         truncateCatalog();
         server.stop(0);
-        server = startPlanifiumStub(malformedProgramsResponse());
+        server = startPlanifiumStub(malformedProgramsResponse(), directCoursesResponseWithNewIds());
         System.setProperty("planifium.base", "http://localhost:" + server.getAddress().getPort());
 
         new CatalogSyncService(cacheRepository).syncAll();
 
         assertEquals(5, coursRepository.getAllPrograms().size());
-        assertEquals(8, coursRepository.getAllCoursesId().orElseThrow().size());
-        assertTrue(coursRepository.getAllCoursesId().orElseThrow().contains("IFT2255"));
-        assertEquals(1, coursRepository.getCourseBy("id", "IFT2255", "true", "A25")
+        assertEquals(10, coursRepository.getAllCoursesId().orElseThrow().size());
+        assertTrue(coursRepository.getAllCoursesId().orElseThrow().contains("IFT3000"));
+        assertTrue(coursRepository.getAllCoursesId().orElseThrow().contains("IFT3999"));
+        assertEquals(1, coursRepository.getCourseBy("id", "IFT3000", "true", "A25")
+                .orElseThrow()
+                .get(0)
+                .getSchedules()
+                .size());
+        assertEquals(1, coursRepository.getCourseBy("id", "IFT3999", "true", "H26")
                 .orElseThrow()
                 .get(0)
                 .getSchedules()
@@ -116,7 +122,7 @@ class CatalogSyncServiceTest {
     @Test
     void syncAllNeRemplacePasUnCacheExistantParLeSeedLocal() throws Exception {
         server.stop(0);
-        server = startPlanifiumStub(malformedProgramsResponse());
+        server = startPlanifiumStub(malformedProgramsResponse(), directCoursesResponseSingle());
         System.setProperty("planifium.base", "http://localhost:" + server.getAddress().getPort());
 
         new CatalogSyncService(cacheRepository).syncAll();
@@ -125,7 +131,7 @@ class CatalogSyncServiceTest {
         assertEquals(List.of("IFT2255"), coursRepository.getAllCoursesId().orElseThrow());
     }
 
-    private HttpServer startPlanifiumStub(String programsResponse) throws IOException {
+    private HttpServer startPlanifiumStub(String programsResponse, String coursesResponse) throws IOException {
         HttpServer httpServer = HttpServer.create(new InetSocketAddress(0), 0);
         httpServer.createContext("/", exchange -> {
             String path = exchange.getRequestURI().getPath();
@@ -133,6 +139,8 @@ class CatalogSyncServiceTest {
 
             if ("/api/v1/programs".equals(path)) {
                 response = programsResponse;
+            } else if ("/api/v1/courses".equals(path)) {
+                response = coursesResponse;
             } else if ("/api/v1/courses/IFT2255".equals(path)) {
                 response = """
                         {
@@ -152,17 +160,46 @@ class CatalogSyncServiceTest {
                           ]
                         }
                         """;
+            } else if ("/api/v1/courses/IFT3000".equals(path)) {
+                response = detailedCourseResponse("IFT3000", "Projet logiciel avancé", "A25");
+            } else if ("/api/v1/courses/IFT3999".equals(path)) {
+                response = detailedCourseResponse("IFT3999", "Atelier d'intégration", "H26");
             } else if ("/api/v1/schedules".equals(path)) {
-                response = """
-                        [
-                          {
-                            "sigle": "IFT2255",
-                            "name": "Génie logiciel",
-                            "semester": "A25",
-                            "sections": []
-                          }
-                        ]
-                        """;
+                String query = exchange.getRequestURI().getQuery();
+                if (query != null && query.contains("IFT3000") && query.contains("A25")) {
+                    response = """
+                            [
+                              {
+                                "sigle": "IFT3000",
+                                "name": "Projet logiciel avancé",
+                                "semester": "A25",
+                                "sections": []
+                              }
+                            ]
+                            """;
+                } else if (query != null && query.contains("IFT3999") && query.contains("H26")) {
+                    response = """
+                            [
+                              {
+                                "sigle": "IFT3999",
+                                "name": "Atelier d'intégration",
+                                "semester": "H26",
+                                "sections": []
+                              }
+                            ]
+                            """;
+                } else {
+                    response = """
+                            [
+                              {
+                                "sigle": "IFT2255",
+                                "name": "Génie logiciel",
+                                "semester": "A25",
+                                "sections": []
+                              }
+                            ]
+                            """;
+                }
             } else {
                 exchange.sendResponseHeaders(404, 0);
                 exchange.close();
@@ -197,6 +234,89 @@ class CatalogSyncServiceTest {
                   }
                 ]
                 """;
+    }
+
+    private String directCoursesResponseSingle() {
+        return """
+                [
+                  {
+                    "id": "IFT2255",
+                    "name": "Génie logiciel",
+                    "credits": 3,
+                    "description": "Projet logiciel",
+                    "available_terms": {
+                      "autumn": true,
+                      "winter": true,
+                      "summer": false
+                    },
+                    "available_periods": {
+                      "daytime": true,
+                      "evening": false
+                    },
+                    "schedules": []
+                  }
+                ]
+                """;
+    }
+
+    private String directCoursesResponseWithNewIds() {
+        return """
+                [
+                  {
+                    "id": "IFT3000",
+                    "name": "Projet logiciel avancé",
+                    "credits": 3,
+                    "description": "Atelier pratique de developpement.",
+                    "available_terms": {
+                      "autumn": true,
+                      "winter": false,
+                      "summer": false
+                    },
+                    "available_periods": {
+                      "daytime": true,
+                      "evening": false
+                    },
+                    "schedules": []
+                  },
+                  {
+                    "id": "IFT3999",
+                    "name": "Atelier d'intégration",
+                    "credits": 3,
+                    "description": "Integration de systemes et projet de synthese.",
+                    "available_terms": {
+                      "autumn": false,
+                      "winter": true,
+                      "summer": false
+                    },
+                    "available_periods": {
+                      "daytime": true,
+                      "evening": false
+                    },
+                    "schedules": []
+                  }
+                ]
+                """;
+    }
+
+    private String detailedCourseResponse(String id, String name, String semester) {
+        return """
+                {
+                  "id": "%s",
+                  "name": "%s",
+                  "description": "Description for %s",
+                  "credits": 3,
+                  "requirement_text": "Aucun",
+                  "udemWebsite": "https://example.com/%s",
+                  "schedules": [
+                    {
+                      "sigle": "%s",
+                      "name": "%s",
+                      "semester": "%s",
+                      "sections": []
+                    }
+                  ]
+                }
+                """.formatted(id, name, id, id, id, name, semester);
     }
 
     private String malformedProgramsResponse() {
