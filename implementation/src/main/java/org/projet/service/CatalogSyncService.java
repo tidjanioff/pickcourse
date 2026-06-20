@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 public class CatalogSyncService {
     private static final Logger LOGGER = Logger.getLogger(CatalogSyncService.class.getName());
     private static final String PLANIFIUM_BASE_URL = "https://planifium-api.onrender.com/api/v1";
+    private static final String PROGRAMS_SEED_RESOURCE = "/seed/programs-seed.json";
 
     private final CatalogCacheRepository cacheRepository;
     private final HttpClient httpClient;
@@ -46,55 +47,25 @@ public class CatalogSyncService {
 
     public void syncAll() {
         Instant start = Instant.now();
-        int programsSynced = 0;
-        int coursesSynced = 0;
-        int schedulesSynced = 0;
 
         try {
             JsonNode programs = fetchProgramsRaw();
-            Set<String> courseIds = new HashSet<>();
-
-            if (programs.isArray()) {
-                for (JsonNode program : programs) {
-                    cacheRepository.upsertProgram(program);
-                    programsSynced++;
-                    collectCourseIds(program, courseIds);
-                }
-            }
-
-            for (String courseId : courseIds) {
-                Optional<Cours> courseOpt = fetchCourseFromPlanifium(courseId, true);
-                if (courseOpt.isEmpty()) {
-                    continue;
-                }
-
-                Cours course = courseOpt.get();
-                cacheRepository.upsertCourse(course);
-                coursesSynced++;
-
-                if (course.getSchedules() != null) {
-                    for (Cours.Schedule schedule : course.getSchedules()) {
-                        Cours.Schedule freshSchedule = fetchScheduleFromPlanifium(courseId, schedule.getSemester())
-                                .orElse(schedule);
-                        cacheRepository.upsertSchedule(courseId, freshSchedule);
-                        schedulesSynced++;
-                    }
-                }
-            }
+            SyncCounts counts = syncFromLivePrograms(programs);
 
             long millis = Duration.between(start, Instant.now()).toMillis();
-            LOGGER.info("Catalog sync completed: programs=" + programsSynced
-                    + ", courses=" + coursesSynced
-                    + ", schedules=" + schedulesSynced
+            LOGGER.info("Catalog sync completed: programs=" + counts.programs
+                    + ", courses=" + counts.courses
+                    + ", schedules=" + counts.schedules
                     + ", durationMs=" + millis);
-            if (programsSynced == 0 || coursesSynced == 0) {
-                LOGGER.warning("Catalog sync completed with missing data: programs=" + programsSynced
-                        + ", courses=" + coursesSynced
-                        + ", schedules=" + schedulesSynced
+            if (counts.programs == 0 || counts.courses == 0) {
+                LOGGER.warning("Catalog sync completed with missing data: programs=" + counts.programs
+                        + ", courses=" + counts.courses
+                        + ", schedules=" + counts.schedules
                         + ", durationMs=" + millis);
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Catalog sync failed", e);
+            seedFallbackIfCacheEmpty(e);
         }
     }
 
@@ -191,6 +162,93 @@ public class CatalogSyncService {
         return connection.getInputStream();
     }
 
+    private SyncCounts syncFromLivePrograms(JsonNode programs) throws Exception {
+        SyncCounts counts = new SyncCounts();
+        Set<String> courseIds = new HashSet<>();
+
+        for (JsonNode program : programs) {
+            cacheRepository.upsertProgram(program);
+            counts.programs++;
+            collectCourseIds(program, courseIds);
+        }
+
+        for (String courseId : courseIds) {
+            Optional<Cours> courseOpt = fetchCourseFromPlanifium(courseId, true);
+            if (courseOpt.isEmpty()) {
+                continue;
+            }
+
+            Cours course = courseOpt.get();
+            cacheRepository.upsertCourse(course);
+            counts.courses++;
+
+            if (course.getSchedules() != null) {
+                for (Cours.Schedule schedule : course.getSchedules()) {
+                    Cours.Schedule freshSchedule = fetchScheduleFromPlanifium(courseId, schedule.getSemester())
+                            .orElse(schedule);
+                    cacheRepository.upsertSchedule(courseId, freshSchedule);
+                    counts.schedules++;
+                }
+            }
+        }
+
+        return counts;
+    }
+
+    private void seedFallbackIfCacheEmpty(Exception syncFailure) {
+        try {
+            if (!cacheRepository.isEmpty()) {
+                LOGGER.warning("Planifium sync failed, local catalog cache already contains data; "
+                        + "fallback seed was not applied");
+                return;
+            }
+
+            SyncCounts counts = seedFromLocalFallback();
+            LOGGER.warning("Planifium sync failed, seeded from local fallback data - programs=" + counts.programs
+                    + ", courses=" + counts.courses
+                    + ", schedules=" + counts.schedules
+                    + ". Original failure: " + syncFailure.getMessage());
+        } catch (Exception fallbackFailure) {
+            LOGGER.log(Level.WARNING, "Catalog fallback seed failed", fallbackFailure);
+        }
+    }
+
+    private SyncCounts seedFromLocalFallback() throws Exception {
+        try (InputStream inputStream = CatalogSyncService.class.getResourceAsStream(PROGRAMS_SEED_RESOURCE)) {
+            if (inputStream == null) {
+                throw new IllegalStateException("Missing catalog fallback seed resource: " + PROGRAMS_SEED_RESOURCE);
+            }
+
+            JsonNode seed = mapper.readTree(inputStream);
+            JsonNode programs = seed.path("programs");
+            JsonNode courses = seed.path("courses");
+            if (!programs.isArray() || !courses.isArray()) {
+                throw new IllegalStateException("Catalog fallback seed must contain programs[] and courses[]");
+            }
+
+            SyncCounts counts = new SyncCounts();
+            for (JsonNode program : programs) {
+                cacheRepository.upsertProgram(program);
+                counts.programs++;
+            }
+
+            for (JsonNode courseNode : courses) {
+                Cours course = mapper.treeToValue(courseNode, Cours.class);
+                cacheRepository.upsertCourse(course);
+                counts.courses++;
+
+                if (course.getSchedules() != null) {
+                    for (Cours.Schedule schedule : course.getSchedules()) {
+                        cacheRepository.upsertSchedule(course.getId(), schedule);
+                        counts.schedules++;
+                    }
+                }
+            }
+
+            return counts;
+        }
+    }
+
     private URI buildUri(String path, Map<String, String> params) {
         String base = planifiumBaseUrl() + path;
         StringBuilder sb = new StringBuilder(base);
@@ -233,5 +291,11 @@ public class CatalogSyncService {
                 collectCourseIds(child, courseIds);
             }
         }
+    }
+
+    private static class SyncCounts {
+        private int programs;
+        private int courses;
+        private int schedules;
     }
 }

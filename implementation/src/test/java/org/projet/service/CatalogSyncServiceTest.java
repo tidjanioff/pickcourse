@@ -31,6 +31,8 @@ class CatalogSyncServiceTest {
             .withPassword("devpassword");
 
     private HttpServer server;
+    private Jdbi jdbi;
+    private CatalogCacheRepository cacheRepository;
     private CoursRepository coursRepository;
 
     @BeforeEach
@@ -40,10 +42,10 @@ class CatalogSyncServiceTest {
                 .load()
                 .migrate();
 
-        Jdbi jdbi = Jdbi.create(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());
+        jdbi = Jdbi.create(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());
         jdbi.useHandle(handle -> handle.execute("TRUNCATE TABLE schedules, courses, programs RESTART IDENTITY"));
 
-        CatalogCacheRepository cacheRepository = new CatalogCacheRepository(jdbi);
+        cacheRepository = new CatalogCacheRepository(jdbi);
         coursRepository = new CoursRepository(cacheRepository);
 
         server = startPlanifiumStub(validProgramsResponse());
@@ -84,12 +86,43 @@ class CatalogSyncServiceTest {
 
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
-                () -> new CatalogSyncService(new CatalogCacheRepository()).fetchProgramsRaw()
+                () -> new CatalogSyncService(cacheRepository).fetchProgramsRaw()
         );
 
         assertTrue(exception.getMessage().contains("Planifium programs response must be a JSON array"));
         assertTrue(exception.getMessage().contains("\"status_code\": 500"));
         assertTrue(exception.getMessage().contains("validation error"));
+    }
+
+    @Test
+    void syncAllUtiliseLeSeedLocalSiPlanifiumEchoueEtCacheVide() throws Exception {
+        truncateCatalog();
+        server.stop(0);
+        server = startPlanifiumStub(malformedProgramsResponse());
+        System.setProperty("planifium.base", "http://localhost:" + server.getAddress().getPort());
+
+        new CatalogSyncService(cacheRepository).syncAll();
+
+        assertEquals(5, coursRepository.getAllPrograms().size());
+        assertEquals(8, coursRepository.getAllCoursesId().orElseThrow().size());
+        assertTrue(coursRepository.getAllCoursesId().orElseThrow().contains("IFT2255"));
+        assertEquals(1, coursRepository.getCourseBy("id", "IFT2255", "true", "A25")
+                .orElseThrow()
+                .get(0)
+                .getSchedules()
+                .size());
+    }
+
+    @Test
+    void syncAllNeRemplacePasUnCacheExistantParLeSeedLocal() throws Exception {
+        server.stop(0);
+        server = startPlanifiumStub(malformedProgramsResponse());
+        System.setProperty("planifium.base", "http://localhost:" + server.getAddress().getPort());
+
+        new CatalogSyncService(cacheRepository).syncAll();
+
+        assertEquals(1, coursRepository.getAllPrograms().size());
+        assertEquals(List.of("IFT2255"), coursRepository.getAllCoursesId().orElseThrow());
     }
 
     private HttpServer startPlanifiumStub(String programsResponse) throws IOException {
@@ -164,5 +197,18 @@ class CatalogSyncServiceTest {
                   }
                 ]
                 """;
+    }
+
+    private String malformedProgramsResponse() {
+        return """
+                {
+                  "status_code": 500,
+                  "detail": "validation error"
+                }
+                """;
+    }
+
+    private void truncateCatalog() {
+        jdbi.useHandle(handle -> handle.execute("TRUNCATE TABLE schedules, courses, programs RESTART IDENTITY"));
     }
 }

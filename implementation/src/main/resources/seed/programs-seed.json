@@ -1,0 +1,261 @@
+{
+  "programs": [
+    {
+      "id": "117510",
+      "name": "Baccalaureat en informatique",
+      "segments": [
+        {
+          "name": "Tronc commun",
+          "blocs": [
+            {
+              "name": "Programmation et genie logiciel",
+              "courses": ["IFT1015", "IFT1025", "IFT2015", "IFT2255"]
+            },
+            {
+              "name": "Fondements et systemes",
+              "courses": ["IFT2125", "IFT2245", "IFT2325", "IFT2035"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "117520",
+      "name": "Majeure en informatique",
+      "segments": [
+        {
+          "name": "Cours obligatoires",
+          "blocs": [
+            {
+              "name": "Base informatique",
+              "courses": ["IFT1015", "IFT1025", "IFT2015", "IFT2255", "IFT2035"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "117530",
+      "name": "Mineure en informatique",
+      "segments": [
+        {
+          "name": "Formation fondamentale",
+          "blocs": [
+            {
+              "name": "Cours de base",
+              "courses": ["IFT1015", "IFT1025", "IFT2015"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "117540",
+      "name": "Certificat en informatique appliquee",
+      "segments": [
+        {
+          "name": "Cheminement type",
+          "blocs": [
+            {
+              "name": "Developpement logiciel",
+              "courses": ["IFT1015", "IFT1025", "IFT2255", "IFT2035"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "117550",
+      "name": "Microprogramme en programmation",
+      "segments": [
+        {
+          "name": "Programmation",
+          "blocs": [
+            {
+              "name": "Cours recommandes",
+              "courses": ["IFT1015", "IFT1025", "IFT2015", "IFT2035"]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "courses": [
+    {
+      "id": "IFT1015",
+      "name": "Programmation 1",
+      "description": "Introduction a la programmation imperative, aux types de donnees, aux fonctions et aux structures de controle.",
+      "scheduledSemester": "A,H",
+      "prerequisite_courses": [],
+      "equivalent_courses": [],
+      "concomitant_courses": [],
+      "udemWebsite": "https://admission.umontreal.ca/cours-et-horaires/cours/ift-1015/",
+      "credits": 3,
+      "requirement_text": "Aucun prealable.",
+      "available_terms": {"A": true, "H": true, "E": false},
+      "available_periods": {"jour": true, "soir": false},
+      "schedules": [
+        {
+          "sigle": "IFT1015",
+          "name": "Programmation 1",
+          "semester": "A25",
+          "sections": []
+        }
+      ]
+    },
+    {
+      "id": "IFT1025",
+      "name": "Programmation 2",
+      "description": "Programmation orientee objet, structures de donnees de base et conception de programmes modulaires.",
+      "scheduledSemester": "A,H",
+      "prerequisite_courses": ["IFT1015"],
+      "equivalent_courses": [],
+      "concomitant_courses": [],
+      "udemWebsite": "https://admission.umontreal.ca/cours-et-horaires/cours/ift-1025/",
+      "credits": 3,
+      "requirement_text": "Prealable: IFT1015.",
+      "available_terms": {"A": true, "H": true, "E": false},
+      "available_periods": {"jour": true, "soir": false},
+      "schedules": [
+        {
+          "sigle": "IFT1025",
+          "name": "Programmation 2",
+          "semester": "A25",
+          "sections": []
+        }
+      ]
+    },
+    {
+      "id": "IFT2015",
+      "name": "Structures de donnees",
+      "description": "Listes, piles, files, arbres, tables de hachage et analyse de performance des structures de donnees.",
+      "scheduledSemester": "A,H",
+      "prerequisite_courses": ["IFT1025"],
+      "equivalent_courses": [],
+      "concomitant_courses": [],
+      "udemWebsite": "https://admission.umontreal.ca/cours-et-horaires/cours/ift-2015/",
+      "credits": 3,
+      "requirement_text": "Prealable: IFT1025.",
+      "available_terms": {"A": true, "H": true, "E": false},
+      "available_periods": {"jour": true, "soir": false},
+      "schedules": [
+        {
+          "sigle": "IFT2015",
+          "name": "Structures de donnees",
+          "semester": "A25",
+          "sections": []
+        }
+      ]
+    },
+    {
+      "id": "IFT2035",
+      "name": "Concepts des langages de programmation",
+      "description": "Principes des langages de programmation, typage, portee, evaluation et paradigmes de programmation.",
+      "scheduledSemester": "H",
+      "prerequisite_courses": ["IFT1025"],
+      "equivalent_courses": [],
+      "concomitant_courses": [],
+      "udemWebsite": "https://admission.umontreal.ca/cours-et-horaires/cours/ift-2035/",
+      "credits": 3,
+      "requirement_text": "Prealable: IFT1025.",
+      "available_terms": {"A": false, "H": true, "E": false},
+      "available_periods": {"jour": true, "soir": false},
+      "schedules": [
+        {
+          "sigle": "IFT2035",
+          "name": "Concepts des langages de programmation",
+          "semester": "H26",
+          "sections": []
+        }
+      ]
+    },
+    {
+      "id": "IFT2125",
+      "name": "Introduction a l'algorithmique",
+      "description": "Conception et analyse d'algorithmes, recursivite, tris, graphes et notions de complexite.",
+      "scheduledSemester": "A,H",
+      "prerequisite_courses": ["IFT1025"],
+      "equivalent_courses": [],
+      "concomitant_courses": [],
+      "udemWebsite": "https://admission.umontreal.ca/cours-et-horaires/cours/ift-2125/",
+      "credits": 3,
+      "requirement_text": "Prealable: IFT1025.",
+      "available_terms": {"A": true, "H": true, "E": false},
+      "available_periods": {"jour": true, "soir": false},
+      "schedules": [
+        {
+          "sigle": "IFT2125",
+          "name": "Introduction a l'algorithmique",
+          "semester": "H26",
+          "sections": []
+        }
+      ]
+    },
+    {
+      "id": "IFT2245",
+      "name": "Systemes d'exploitation",
+      "description": "Processus, fils d'execution, synchronisation, memoire, systemes de fichiers et appels systeme.",
+      "scheduledSemester": "A,H",
+      "prerequisite_courses": ["IFT1025"],
+      "equivalent_courses": [],
+      "concomitant_courses": [],
+      "udemWebsite": "https://admission.umontreal.ca/cours-et-horaires/cours/ift-2245/",
+      "credits": 3,
+      "requirement_text": "Prealable: IFT1025.",
+      "available_terms": {"A": true, "H": true, "E": false},
+      "available_periods": {"jour": true, "soir": false},
+      "schedules": [
+        {
+          "sigle": "IFT2245",
+          "name": "Systemes d'exploitation",
+          "semester": "H26",
+          "sections": []
+        }
+      ]
+    },
+    {
+      "id": "IFT2255",
+      "name": "Genie logiciel",
+      "description": "Methodes de developpement logiciel, exigences, conception, tests, maintenance et travail en equipe.",
+      "scheduledSemester": "A,H",
+      "prerequisite_courses": ["IFT1025"],
+      "equivalent_courses": [],
+      "concomitant_courses": [],
+      "udemWebsite": "https://admission.umontreal.ca/cours-et-horaires/cours/ift-2255/",
+      "credits": 3,
+      "requirement_text": "Prealable: IFT1025.",
+      "available_terms": {"A": true, "H": true, "E": false},
+      "available_periods": {"jour": true, "soir": false},
+      "schedules": [
+        {
+          "sigle": "IFT2255",
+          "name": "Genie logiciel",
+          "semester": "A25",
+          "sections": []
+        }
+      ]
+    },
+    {
+      "id": "IFT2325",
+      "name": "Bases de donnees",
+      "description": "Modelisation relationnelle, SQL, normalisation, transactions et conception de bases de donnees.",
+      "scheduledSemester": "A,H",
+      "prerequisite_courses": ["IFT1025"],
+      "equivalent_courses": [],
+      "concomitant_courses": [],
+      "udemWebsite": "https://admission.umontreal.ca/cours-et-horaires/cours/ift-2325/",
+      "credits": 3,
+      "requirement_text": "Prealable: IFT1025.",
+      "available_terms": {"A": true, "H": true, "E": false},
+      "available_periods": {"jour": true, "soir": false},
+      "schedules": [
+        {
+          "sigle": "IFT2325",
+          "name": "Bases de donnees",
+          "semester": "A25",
+          "sections": []
+        }
+      ]
+    }
+  ]
+}
