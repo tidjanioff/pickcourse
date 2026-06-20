@@ -106,9 +106,9 @@ public class AvisService {
     public synchronized void enregistrerAvis(String sigle, String prof,
                                              int noteDifficulte, int noteQualite,
                                              String commentaire) {
-        try {
-            this.validateAvis(sigle, prof, noteDifficulte, noteQualite, commentaire);
+        this.validateAvis(sigle, prof, noteDifficulte, noteQualite, commentaire);
 
+        try {
             //  Recharger le fichier à chaque écriture
             if (fichier.exists()) {
                 avisStockes = mapper.readValue(fichier, new TypeReference<List<Avis>>() {});
@@ -126,9 +126,8 @@ public class AvisService {
             avisStockes.add(avis);
             mapper.writeValue(fichier, avisStockes);
 
-        } catch (Exception e) {
-            System.out.println("Erreur enregistrer avis");
-            e.printStackTrace();
+        } catch (IOException e) {
+            throw new RuntimeException("Erreur enregistrer avis", e);
         }
     }
 

@@ -52,6 +52,7 @@ public class AvisController {
             // Il est possible qu'il n'y ait pas d'avis pour ce cours.
             if(avis == null || avis.isEmpty()) {
                 ctx.status(400).result("Erreur : avis inexistant");
+                return;
             }
 
             ctx.status(200).json(avis);
@@ -89,6 +90,7 @@ public class AvisController {
             // Il est possible qu'il n'y ait pas d'avis pour ce cours.
             if(avis == null || avis.isEmpty()) {
                 ctx.status(400).result("Erreur : avis inexistant");
+                return;
             }
 
             ctx.status(200).json(avis);

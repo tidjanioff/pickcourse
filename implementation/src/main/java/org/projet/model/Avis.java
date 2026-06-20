@@ -32,7 +32,6 @@ public class Avis {
         this.sigleCours = sigleCours;
         this.noteChargeTravail = noteCharge;
         this.valide = valide;
-        this.noteChargeTravail = noteChargeTravail;
         this.nomProfesseur = nomProfesseur;
     }
 

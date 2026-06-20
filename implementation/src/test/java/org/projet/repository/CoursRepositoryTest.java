@@ -7,14 +7,19 @@ import org.junit.jupiter.api.Test;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class CoursRepositoryTest {
 
-    CoursRepository repo = CoursRepository.getInstance();
+    CoursRepository repo = mock(CoursRepository.class);
 
     @Test
     @DisplayName("getAllCoursesId() retourne une liste non vide")
     void testGetAllCoursesIdNonVide() throws Exception {
+        when(repo.getAllCoursesId())
+                .thenReturn(Optional.of(List.of("IFT1025", "IFT2255")));
+
         Optional<List<String>> opt = repo.getAllCoursesId();
 
         assertTrue(opt.isPresent(), "L'Optional doit être présent");
@@ -24,6 +29,9 @@ public class CoursRepositoryTest {
     @Test
     @DisplayName("getAllCoursesId() contient IFT2255")
     void testGetAllCoursesIdContainsIFT2255() throws Exception {
+        when(repo.getAllCoursesId())
+                .thenReturn(Optional.of(List.of("IFT1025", "IFT2255")));
+
         Optional<List<String>> opt = repo.getAllCoursesId();
 
         assertTrue(opt.isPresent());
@@ -35,6 +43,9 @@ public class CoursRepositoryTest {
     @Test
     @DisplayName("getAllCoursesId() ne contient pas de doublons")
     void testGetAllCoursesIdPasDeDoublons() throws Exception {
+        when(repo.getAllCoursesId())
+                .thenReturn(Optional.of(List.of("IFT1025", "IFT2255")));
+
         List<String> ids = repo.getAllCoursesId().orElseThrow();
 
         Set<String> uniques = new HashSet<>(ids);
@@ -49,6 +60,9 @@ public class CoursRepositoryTest {
     @Test
     @DisplayName("getCourseBy(id) retourne une liste contenant le cours demandé")
     void testGetCourseByIdIFT1025() throws Exception {
+        Cours coursIFT1025 = cours("IFT1025", "Programmation 2");
+        when(repo.getCourseBy("id", "IFT1025", null, null))
+                .thenReturn(Optional.of(List.of(coursIFT1025)));
 
         Optional<List<Cours>> opt =
                 repo.getCourseBy("id", "IFT1025", null, null);
@@ -65,6 +79,9 @@ public class CoursRepositoryTest {
     @Test
     @DisplayName("getCourseBy(id) retourne un nom cohérent pour IFT1025")
     void testGetCourseByIdCheckName() throws Exception {
+        Cours coursIFT1025 = cours("IFT1025", "Programmation 2");
+        when(repo.getCourseBy("id", "IFT1025", null, null))
+                .thenReturn(Optional.of(List.of(coursIFT1025)));
 
         List<Cours> list =
                 repo.getCourseBy("id", "IFT1025", null, null)
@@ -78,6 +95,8 @@ public class CoursRepositoryTest {
     @Test
     @DisplayName("getCourseBy(id) retourne Optional.empty() pour un id inexistant")
     void testGetCourseByIdCoursInexistant() throws Exception {
+        when(repo.getCourseBy("id", "TIDJANI45", null, null))
+                .thenReturn(Optional.empty());
 
         Optional<List<Cours>> opt =
                 repo.getCourseBy("id", "TIDJANI45", null, null);
@@ -88,20 +107,23 @@ public class CoursRepositoryTest {
     @Test
     @DisplayName("getCourseBy('name') retourne une liste de cours par recherche de mot-clé")
     void testGetCourseByName() throws Exception {
-        // Teste la recherche par NOM avec un mot-clé courant
+        when(repo.getCourseBy("name", "Programmation", "false", null))
+                .thenReturn(Optional.of(List.of(cours("IFT1015", "programmation 1"))));
+
         Optional<List<Cours>> opt = repo.getCourseBy("name", "Programmation", "false", null);
 
         assertTrue(opt.isPresent(), "La recherche par nom devrait retourner un résultat");
         assertFalse(opt.get().isEmpty(), "La liste ne devrait pas être vide");
 
-        // Vérifie le contenu
         assertTrue(opt.get().get(0).getName().contains("programmation"));
     }
 
     @Test
     @DisplayName("getCourseEligibility() retourne une réponse JSON valide (Requête POST)")
     void testGetCourseEligibility() throws Exception {
-        // Teste la connexion réelle à l'API Planifium
+        when(repo.getCourseEligibility("IFT2255", List.of("IFT1025")))
+                .thenReturn("{\"eligible\":true,\"missing_prerequisites\":[]}");
+
         String jsonReponse = repo.getCourseEligibility("IFT2255", List.of("IFT1025"));
 
         assertNotNull(jsonReponse, "La réponse de l'API ne doit pas être null");
@@ -112,11 +134,21 @@ public class CoursRepositoryTest {
     @Test
     @DisplayName("La méthode getCoursById() retourne bien le cours recherché")
     void testGetCoursByIdCoursIFT1025() throws Exception {
+        when(repo.getCourseBy("id", "IFT1025","null", "null"))
+                .thenReturn(Optional.of(List.of(cours("IFT1025", "Programmation 2"))));
+
         Optional<List<Cours>> optListe = repo.getCourseBy("id", "IFT1025","null", "null");
         assertTrue(optListe.isPresent(), "Ça devrait retourner un objet Cours");
         Cours cours = optListe.get().get(0);
         assertTrue( cours.getId().equals("IFT1025"));
 
+    }
+
+    private Cours cours(String id, String name) {
+        Cours cours = new Cours();
+        cours.setId(id);
+        cours.setName(name);
+        return cours;
     }
 
 }

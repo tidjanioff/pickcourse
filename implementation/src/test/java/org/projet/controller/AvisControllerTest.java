@@ -150,13 +150,14 @@ class AvisControllerTest {
         // Arrange
         when(avisService.getAllAvis()).thenReturn(new ArrayList<>());
         when(ctx.status(400)).thenReturn(ctx);
-        when(ctx.status(200)).thenReturn(ctx);
 
         
         avisController.getAllAvis(ctx);
 
         verify(ctx).status(400);
         verify(ctx).result("Erreur : avis inexistant");
+        verify(ctx, never()).status(200);
+        verify(ctx, never()).json(any());
     }
 
     /**
@@ -238,12 +239,13 @@ class AvisControllerTest {
         when(ctx.pathParam("sigle")).thenReturn("IFT1234");
         when(avisService.getAvisParCours("IFT1234")).thenReturn(new ArrayList<>());
         when(ctx.status(400)).thenReturn(ctx);
-        when(ctx.status(200)).thenReturn(ctx);
 
         avisController.getAvisParCours(ctx);
 
         verify(ctx).status(400);
         verify(ctx).result("Erreur : avis inexistant");
+        verify(ctx, never()).status(200);
+        verify(ctx, never()).json(any());
     }
 
     /**
@@ -298,4 +300,3 @@ class AvisControllerTest {
         verify(ctx).json(avisList);
     }
 }
-
