@@ -5,6 +5,7 @@ import io.javalin.Javalin;
 import org.projet.config.DatabaseConfig;
 import org.projet.controller.AvisController;
 import org.projet.controller.CoursController;
+import org.projet.service.CatalogSyncScheduler;
 
 /**
  * Cette classe permet de définir les routes pour notre API et lancer cette dernière.
@@ -17,6 +18,7 @@ public class Main {
      */
     public static void main(String[] args) {
         DatabaseConfig.migrate();
+        new CatalogSyncScheduler().start();
 
         CoursController coursController = new CoursController();
         AvisController avisController = new AvisController();

@@ -1,105 +1,85 @@
 package org.projet.repository;
 
-import org.projet.model.Cours;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.flywaydb.core.Flyway;
+import org.jdbi.v3.core.Jdbi;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.projet.model.Cours;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.util.*;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
+@Testcontainers
 public class CoursRepositoryTest {
+    @Container
+    private static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16")
+            .withDatabaseName("pickcourse")
+            .withUsername("pickcourse")
+            .withPassword("devpassword");
 
-    CoursRepository repo = mock(CoursRepository.class);
+    private final ObjectMapper mapper = new ObjectMapper();
+    private CoursRepository repo;
+    private CatalogCacheRepository cacheRepository;
 
-    @Test
-    @DisplayName("getAllCoursesId() retourne une liste non vide")
-    void testGetAllCoursesIdNonVide() throws Exception {
-        when(repo.getAllCoursesId())
-                .thenReturn(Optional.of(List.of("IFT1025", "IFT2255")));
+    @BeforeEach
+    void setUp() throws Exception {
+        Flyway.configure()
+                .dataSource(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword())
+                .load()
+                .migrate();
 
-        Optional<List<String>> opt = repo.getAllCoursesId();
+        Jdbi jdbi = Jdbi.create(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());
+        jdbi.useHandle(handle -> {
+            handle.execute("TRUNCATE TABLE schedules, courses, programs RESTART IDENTITY");
+            handle.execute("TRUNCATE TABLE reviews RESTART IDENTITY");
+        });
 
-        assertTrue(opt.isPresent(), "L'Optional doit être présent");
-        assertFalse(opt.get().isEmpty(), "La liste doit contenir au moins un cours");
+        cacheRepository = new CatalogCacheRepository(jdbi);
+        repo = new CoursRepository(cacheRepository);
+        seedCatalog();
     }
 
     @Test
-    @DisplayName("getAllCoursesId() contient IFT2255")
-    void testGetAllCoursesIdContainsIFT2255() throws Exception {
-        when(repo.getAllCoursesId())
-                .thenReturn(Optional.of(List.of("IFT1025", "IFT2255")));
-
+    @DisplayName("getAllCoursesId() retourne les cours du cache sans doublons")
+    void testGetAllCoursesId() throws Exception {
         Optional<List<String>> opt = repo.getAllCoursesId();
 
         assertTrue(opt.isPresent());
-        List<String> ids = opt.get();
-
-        assertTrue(ids.contains("IFT2255"), "IFT2255 devrait être présent");
+        assertEquals(List.of("IFT1025", "IFT2255"), opt.get());
     }
-
-    @Test
-    @DisplayName("getAllCoursesId() ne contient pas de doublons")
-    void testGetAllCoursesIdPasDeDoublons() throws Exception {
-        when(repo.getAllCoursesId())
-                .thenReturn(Optional.of(List.of("IFT1025", "IFT2255")));
-
-        List<String> ids = repo.getAllCoursesId().orElseThrow();
-
-        Set<String> uniques = new HashSet<>(ids);
-
-        assertEquals(
-                uniques.size(), ids.size(),
-                "Il ne devrait pas y avoir de doublons"
-        );
-    }
-
 
     @Test
     @DisplayName("getCourseBy(id) retourne une liste contenant le cours demandé")
     void testGetCourseByIdIFT1025() throws Exception {
-        Cours coursIFT1025 = cours("IFT1025", "Programmation 2");
-        when(repo.getCourseBy("id", "IFT1025", null, null))
-                .thenReturn(Optional.of(List.of(coursIFT1025)));
-
-        Optional<List<Cours>> opt =
-                repo.getCourseBy("id", "IFT1025", null, null);
+        Optional<List<Cours>> opt = repo.getCourseBy("id", "IFT1025", null, null);
 
         assertTrue(opt.isPresent(), "L'Optional doit être présent");
-
-        List<Cours> list = opt.get();
-        assertEquals(1, list.size(), "La recherche par id doit retourner un seul Cours");
-
-        Cours cours = list.get(0);
-        assertEquals("IFT1025", cours.getId());
+        assertEquals(1, opt.get().size(), "La recherche par id doit retourner un seul Cours");
+        assertEquals("IFT1025", opt.get().get(0).getId());
     }
 
     @Test
-    @DisplayName("getCourseBy(id) retourne un nom cohérent pour IFT1025")
-    void testGetCourseByIdCheckName() throws Exception {
-        Cours coursIFT1025 = cours("IFT1025", "Programmation 2");
-        when(repo.getCourseBy("id", "IFT1025", null, null))
-                .thenReturn(Optional.of(List.of(coursIFT1025)));
+    @DisplayName("getCourseBy(id) supporte la recherche par préfixe de sigle")
+    void testGetCourseByIdPrefix() throws Exception {
+        Optional<List<Cours>> opt = repo.getCourseBy("id", "IFT", null, null);
 
-        List<Cours> list =
-                repo.getCourseBy("id", "IFT1025", null, null)
-                        .orElseThrow();
-
-        Cours cours = list.get(0);
-
-        assertEquals("Programmation 2", cours.getName());
+        assertTrue(opt.isPresent());
+        assertEquals(2, opt.get().size());
     }
 
     @Test
     @DisplayName("getCourseBy(id) retourne Optional.empty() pour un id inexistant")
     void testGetCourseByIdCoursInexistant() throws Exception {
-        when(repo.getCourseBy("id", "TIDJANI45", null, null))
-                .thenReturn(Optional.empty());
-
-        Optional<List<Cours>> opt =
-                repo.getCourseBy("id", "TIDJANI45", null, null);
+        Optional<List<Cours>> opt = repo.getCourseBy("id", "TIDJANI45", null, null);
 
         assertTrue(opt.isEmpty(), "Un id inexistant doit retourner Optional.empty()");
     }
@@ -107,48 +87,103 @@ public class CoursRepositoryTest {
     @Test
     @DisplayName("getCourseBy('name') retourne une liste de cours par recherche de mot-clé")
     void testGetCourseByName() throws Exception {
-        when(repo.getCourseBy("name", "Programmation", "false", null))
-                .thenReturn(Optional.of(List.of(cours("IFT1015", "programmation 1"))));
-
         Optional<List<Cours>> opt = repo.getCourseBy("name", "Programmation", "false", null);
 
         assertTrue(opt.isPresent(), "La recherche par nom devrait retourner un résultat");
         assertFalse(opt.get().isEmpty(), "La liste ne devrait pas être vide");
-
-        assertTrue(opt.get().get(0).getName().contains("programmation"));
+        assertTrue(opt.get().get(0).getName().contains("Programmation"));
     }
 
     @Test
-    @DisplayName("getCourseEligibility() retourne une réponse JSON valide (Requête POST)")
-    void testGetCourseEligibility() throws Exception {
-        when(repo.getCourseEligibility("IFT2255", List.of("IFT1025")))
-                .thenReturn("{\"eligible\":true,\"missing_prerequisites\":[]}");
+    @DisplayName("getCourseBy(description) retourne une liste de cours par mot-clé")
+    void testGetCourseByDescription() throws Exception {
+        Optional<List<Cours>> opt = repo.getCourseBy("description", "logiciel", "false", null);
 
-        String jsonReponse = repo.getCourseEligibility("IFT2255", List.of("IFT1025"));
-
-        assertNotNull(jsonReponse, "La réponse de l'API ne doit pas être null");
-        assertTrue(jsonReponse.contains("eligible"), "Le JSON retourné devrait contenir le champ 'eligible'");
+        assertTrue(opt.isPresent());
+        assertEquals("IFT2255", opt.get().get(0).getId());
     }
 
-    // test d'invariance
     @Test
-    @DisplayName("La méthode getCoursById() retourne bien le cours recherché")
-    void testGetCoursByIdCoursIFT1025() throws Exception {
-        when(repo.getCourseBy("id", "IFT1025","null", "null"))
-                .thenReturn(Optional.of(List.of(cours("IFT1025", "Programmation 2"))));
+    @DisplayName("getCourseBy() ajoute les horaires depuis le cache")
+    void testGetCourseByWithSchedules() throws Exception {
+        Optional<List<Cours>> opt = repo.getCourseBy("id", "IFT2255", "true", "A25");
 
-        Optional<List<Cours>> optListe = repo.getCourseBy("id", "IFT1025","null", "null");
-        assertTrue(optListe.isPresent(), "Ça devrait retourner un objet Cours");
-        Cours cours = optListe.get().get(0);
-        assertTrue( cours.getId().equals("IFT1025"));
-
+        assertTrue(opt.isPresent());
+        assertEquals(1, opt.get().get(0).getSchedules().size());
+        assertEquals("A25", opt.get().get(0).getSchedules().get(0).getSemester());
     }
 
-    private Cours cours(String id, String name) {
+    @Test
+    @DisplayName("getCourseBy() refuse un filtre session si includeSchedule=false")
+    void testGetCourseBySemesterWithoutSchedules() throws Exception {
+        Optional<List<Cours>> opt = repo.getCourseBy("id", "IFT2255", "false", "A25");
+
+        assertTrue(opt.isEmpty());
+    }
+
+    @Test
+    @DisplayName("getAllPrograms() retourne les programmes du cache")
+    void testGetAllPrograms() {
+        List<Map<String, String>> programs = repo.getAllPrograms();
+
+        assertEquals(1, programs.size());
+        assertEquals("117510", programs.get(0).get("id"));
+        assertEquals("Informatique", programs.get(0).get("name"));
+    }
+
+    @Test
+    @DisplayName("getCoursesForAProgram() retourne le JSON attendu par le service")
+    void testGetCoursesForAProgram() throws Exception {
+        String json = repo.getCoursesForAProgram("117510");
+
+        assertTrue(json.contains("IFT1025"));
+        assertTrue(json.contains("IFT2255"));
+    }
+
+    @Test
+    @DisplayName("fetchSchedules() retourne un flux JSON depuis le cache")
+    void testFetchSchedules() throws Exception {
+        try (InputStream inputStream = repo.fetchSchedules("IFT2255", "A25")) {
+            var json = mapper.readTree(inputStream);
+            assertTrue(json.isArray());
+            assertEquals("A25", json.get(0).get("semester").asText());
+        }
+    }
+
+    private void seedCatalog() throws Exception {
+        cacheRepository.upsertCourse(cours("IFT1025", "Programmation 2", "Programmation objet"));
+        cacheRepository.upsertCourse(cours("IFT2255", "Génie logiciel", "Projet logiciel"));
+        cacheRepository.upsertProgram(mapper.readTree("""
+                {
+                  "id": "117510",
+                  "name": "Informatique",
+                  "segments": [
+                    {
+                      "blocs": [
+                        {
+                          "courses": ["IFT1025", "IFT2255"]
+                        }
+                      ]
+                    }
+                  ]
+                }
+                """));
+
+        Cours.Schedule schedule = new Cours.Schedule();
+        schedule.setSigle("IFT2255");
+        schedule.setName("Génie logiciel");
+        schedule.setSemester("A25");
+        cacheRepository.upsertSchedule("IFT2255", schedule);
+    }
+
+    private Cours cours(String id, String name, String description) {
         Cours cours = new Cours();
         cours.setId(id);
         cours.setName(name);
+        cours.setDescription(description);
+        cours.setCredits(3);
+        cours.setRequirement_text("Aucun");
+        cours.setUdemWebsite("https://example.com/" + id);
         return cours;
     }
-
 }

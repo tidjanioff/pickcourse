@@ -3,10 +3,12 @@ package org.projet.controller;
 import io.javalin.http.Context;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.projet.model.Cours;
 import org.projet.service.CoursService;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
@@ -18,11 +20,15 @@ public class CoursControllerTest {
     @DisplayName("Comparaison avec cours invalides")
     void testComparerCours_withInvalidCourseIds() {
         CoursController controller = new CoursController();
+        CoursService service = mock(CoursService.class);
+        injectCoursService(controller, service);
+
         Context ctx = mock(Context.class);
         CoursController.RequeteComparaison req = new CoursController.RequeteComparaison();
         req.cours = new String[]{"INVALID1", "INVALID2"};
         req.criteres = new String[]{"name", "credits"};
         when(ctx.bodyAsClass(CoursController.RequeteComparaison.class)).thenReturn(req);
+        when(service.comparerCours(req.cours, req.criteres, req.session)).thenReturn(null);
 
         controller.comparerCours(ctx);
         verify(ctx).status(400);
@@ -35,6 +41,9 @@ public class CoursControllerTest {
     @DisplayName("Recherche de cours par ID valide")
     void testRechercherCours_byValidId() {
         CoursController controller = new CoursController();
+        CoursService service = mock(CoursService.class);
+        injectCoursService(controller, service);
+
         Context ctx = mock(Context.class);
         CoursController.RequeteRecherche req = new CoursController.RequeteRecherche();
         req.param = "id";
@@ -43,16 +52,21 @@ public class CoursControllerTest {
         req.semester = null;
 
         when(ctx.bodyAsClass(CoursController.RequeteRecherche.class)).thenReturn(req);
+        when(service.rechercherCours(req.param, req.valeur, req.includeSchedule, req.semester))
+                .thenReturn(Optional.of(List.of(cours("IFT1025"))));
 
         controller.rechercherCours(ctx);
 
-        verify(ctx).status(anyInt());
+        verify(ctx).status(200);
     }
 
     @Test
     @DisplayName("Recherche de cours par nom")
     void testRechercherCours_byName() {
         CoursController controller = new CoursController();
+        CoursService service = mock(CoursService.class);
+        injectCoursService(controller, service);
+
         Context ctx = mock(Context.class);
         CoursController.RequeteRecherche req = new CoursController.RequeteRecherche();
         req.param = "name";
@@ -61,16 +75,21 @@ public class CoursControllerTest {
         req.semester = null;
 
         when(ctx.bodyAsClass(CoursController.RequeteRecherche.class)).thenReturn(req);
+        when(service.rechercherCours(req.param, req.valeur, req.includeSchedule, req.semester))
+                .thenReturn(Optional.of(List.of(cours("IFT1025"))));
 
         controller.rechercherCours(ctx);
 
-        verify(ctx).status(anyInt());
+        verify(ctx).status(200);
     }
 
     @Test
     @DisplayName("Recherche de cours par description")
     void testRechercherCours_byDescription() {
         CoursController controller = new CoursController();
+        CoursService service = mock(CoursService.class);
+        injectCoursService(controller, service);
+
         Context ctx = mock(Context.class);
         CoursController.RequeteRecherche req = new CoursController.RequeteRecherche();
         req.param = "description";
@@ -79,16 +98,21 @@ public class CoursControllerTest {
         req.semester = null;
 
         when(ctx.bodyAsClass(CoursController.RequeteRecherche.class)).thenReturn(req);
+        when(service.rechercherCours(req.param, req.valeur, req.includeSchedule, req.semester))
+                .thenReturn(Optional.of(List.of(cours("IFT1025"))));
 
         controller.rechercherCours(ctx);
 
-        verify(ctx).status(anyInt());
+        verify(ctx).status(200);
     }
 
     @Test
     @DisplayName("Recherche avec paramètre invalide")
     void testRechercherCours_byInvalidParam() {
         CoursController controller = new CoursController();
+        CoursService service = mock(CoursService.class);
+        injectCoursService(controller, service);
+
         Context ctx = mock(Context.class);
         CoursController.RequeteRecherche req = new CoursController.RequeteRecherche();
         req.param = "invalid_param";
@@ -97,16 +121,21 @@ public class CoursControllerTest {
         req.semester = null;
 
         when(ctx.bodyAsClass(CoursController.RequeteRecherche.class)).thenReturn(req);
+        when(service.rechercherCours(req.param, req.valeur, req.includeSchedule, req.semester))
+                .thenReturn(Optional.empty());
 
         controller.rechercherCours(ctx);
 
-        verify(ctx, atLeastOnce()).status(anyInt());
+        verify(ctx).status(404);
     }
 
     @Test
     @DisplayName("Recherche avec schedule et semester")
     void testRechercherCours_withScheduleAndSemester() {
         CoursController controller = new CoursController();
+        CoursService service = mock(CoursService.class);
+        injectCoursService(controller, service);
+
         Context ctx = mock(Context.class);
         CoursController.RequeteRecherche req = new CoursController.RequeteRecherche();
         req.param = "id";
@@ -115,10 +144,12 @@ public class CoursControllerTest {
         req.semester = "FALL";
 
         when(ctx.bodyAsClass(CoursController.RequeteRecherche.class)).thenReturn(req);
+        when(service.rechercherCours(req.param, req.valeur, req.includeSchedule, req.semester))
+                .thenReturn(Optional.of(List.of(cours("IFT1025"))));
 
         controller.rechercherCours(ctx);
 
-        verify(ctx).status(anyInt());
+        verify(ctx).status(200);
     }
 
     @Test
@@ -200,5 +231,11 @@ public class CoursControllerTest {
         } catch (Exception e) {
             fail(e);
         }
+    }
+
+    private Cours cours(String id) {
+        Cours cours = new Cours();
+        cours.setId(id);
+        return cours;
     }
 }
