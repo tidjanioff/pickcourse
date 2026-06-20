@@ -1,6 +1,7 @@
 package org.projet.service;
 
 import org.projet.exception.HoraireException;
+import org.projet.model.Avis;
 import org.projet.model.Cours;
 import org.projet.model.Resultats;
 import org.projet.repository.CoursRepository;
@@ -632,6 +633,65 @@ void testComparePopulariteCours() {
         // ASSERT
         assertEquals("Le cours Programmation 1 est plus populaire que Expression orale académique et professionnelle avec 658 participants contre 5.", message);
 
+}
+
+@Test
+@DisplayName("comparerCoursParAvis() compare la difficulté moyenne")
+void testComparerCoursParAvisDifficulte() throws Exception {
+        AvisService avisService = mock(AvisService.class);
+        injectAvisService(avisService);
+
+        when(mockRepo.getAllCoursesId())
+                .thenReturn(Optional.of(List.of("IFT2255")));
+        when(avisService.getAvisParCours("IFT2255"))
+                .thenReturn(List.of(
+                        new Avis("IFT2255", "Prof A", 5, 1, "Avis 1", true),
+                        new Avis("IFT2255", "Prof B", 1, 3, "Avis 2", true)
+                ));
+
+        List<List<String>> resultat = service.comparerCoursParAvis(
+                new String[]{"IFT2255"},
+                "difficulte"
+        );
+
+        assertEquals("2.00", resultat.get(0).get(1));
+}
+
+@Test
+@DisplayName("comparerCoursParAvis() compare la charge moyenne")
+void testComparerCoursParAvisCharge() throws Exception {
+        AvisService avisService = mock(AvisService.class);
+        injectAvisService(avisService);
+
+        when(mockRepo.getAllCoursesId())
+                .thenReturn(Optional.of(List.of("IFT2255")));
+        when(avisService.getAvisParCours("IFT2255"))
+                .thenReturn(List.of(
+                        new Avis("IFT2255", "Prof A", 5, 1, "Avis 1", true),
+                        new Avis("IFT2255", "Prof B", 1, 3, "Avis 2", true)
+                ));
+
+        List<List<String>> resultat = service.comparerCoursParAvis(
+                new String[]{"IFT2255"},
+                "charge"
+        );
+
+        assertEquals("3.00", resultat.get(0).get(1));
+}
+
+@Test
+@DisplayName("comparerCoursParAvis() refuse un critère invalide")
+void testComparerCoursParAvisCritereInvalide() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.comparerCoursParAvis(new String[]{"IFT2255"}, "popularite")
+        );
+}
+
+private void injectAvisService(AvisService avisService) throws Exception {
+        Field avisServiceField = CoursService.class.getDeclaredField("avisService");
+        avisServiceField.setAccessible(true);
+        avisServiceField.set(service, avisService);
 }
 
 }

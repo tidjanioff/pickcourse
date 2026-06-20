@@ -83,29 +83,20 @@ public class CoursController {
     }
 
     /**
-     * Cette méthode permet de gérer la requête utilisateur pour la comparaison basée sur la difficulté pour les avis.
+     * Cette méthode permet de gérer la comparaison de cours basée sur les avis étudiants.
      * @param ctx
      */
-    public void comparerParDifficulteAvis(Context ctx){
+    public void comparerParAvis(Context ctx){
         RequeteComparaisonAvis req = ctx.bodyAsClass(RequeteComparaisonAvis.class);
-        try{
-            List<List<String>> resultat = coursService.comparerCoursParNoteDifficulteAvis(req.idsCours);
-            ctx.status(200);
-            ctx.json(resultat);
-        }catch(RuntimeException e){
+        if (req.critere == null ||
+                (!req.critere.equalsIgnoreCase("difficulte") && !req.critere.equalsIgnoreCase("charge"))) {
             ctx.status(400);
-            ctx.json("Des avis pour ces cours n'ont pas été trouvés.");
+            ctx.json("Critère invalide. Les valeurs possibles sont difficulte et charge.");
+            return;
         }
-    }
 
-    /**
-     * Cette méthode permet de gérer la requête utilisateur pour la comparaison basée sur la difficulté pour les avis.
-     * @param ctx
-     */
-    public void comparerParChargeAvis(Context ctx){
-        RequeteComparaisonAvis req = ctx.bodyAsClass(RequeteComparaisonAvis.class);
         try{
-            List<List<String>> resultat = coursService.comparerCoursParChargeTravailAvis(req.idsCours);
+            List<List<String>> resultat = coursService.comparerCoursParAvis(req.idsCours, req.critere);
             ctx.status(200);
             ctx.json(resultat);
         }catch(RuntimeException e){
@@ -333,6 +324,9 @@ public class CoursController {
     public static class RequeteComparaisonAvis{
         /** Tableau des sigles de cours à comparer à partir des avis. */
         public String[] idsCours;
+
+        /** Critère d'avis à comparer: difficulte ou charge. */
+        public String critere;
     }
     /**
      * Cette classe permet de parser le json du body de la requête comparaison. La classe est interne donc

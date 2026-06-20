@@ -3,7 +3,12 @@ package org.projet.controller;
 import io.javalin.http.Context;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.projet.service.CoursService;
 
+import java.lang.reflect.Field;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 
 public class CoursControllerTest {
@@ -116,4 +121,84 @@ public class CoursControllerTest {
         verify(ctx).status(anyInt());
     }
 
+    @Test
+    @DisplayName("Comparaison des avis par difficulté")
+    void testComparerParAvisDifficulte() {
+        CoursController controller = new CoursController();
+        CoursService service = mock(CoursService.class);
+        injectCoursService(controller, service);
+
+        Context ctx = mock(Context.class);
+        CoursController.RequeteComparaisonAvis req = new CoursController.RequeteComparaisonAvis();
+        req.idsCours = new String[]{"IFT2255", "IFT1025"};
+        req.critere = "difficulte";
+        List<List<String>> resultat = List.of(
+                List.of("IFT2255", "3.50"),
+                List.of("IFT1025", "2.50")
+        );
+
+        when(ctx.bodyAsClass(CoursController.RequeteComparaisonAvis.class)).thenReturn(req);
+        when(service.comparerCoursParAvis(req.idsCours, "difficulte")).thenReturn(resultat);
+
+        controller.comparerParAvis(ctx);
+
+        verify(ctx).status(200);
+        verify(ctx).json(resultat);
+    }
+
+    @Test
+    @DisplayName("Comparaison des avis par charge de travail")
+    void testComparerParAvisCharge() {
+        CoursController controller = new CoursController();
+        CoursService service = mock(CoursService.class);
+        injectCoursService(controller, service);
+
+        Context ctx = mock(Context.class);
+        CoursController.RequeteComparaisonAvis req = new CoursController.RequeteComparaisonAvis();
+        req.idsCours = new String[]{"IFT2255", "IFT1025"};
+        req.critere = "charge";
+        List<List<String>> resultat = List.of(
+                List.of("IFT2255", "4.00"),
+                List.of("IFT1025", "2.00")
+        );
+
+        when(ctx.bodyAsClass(CoursController.RequeteComparaisonAvis.class)).thenReturn(req);
+        when(service.comparerCoursParAvis(req.idsCours, "charge")).thenReturn(resultat);
+
+        controller.comparerParAvis(ctx);
+
+        verify(ctx).status(200);
+        verify(ctx).json(resultat);
+    }
+
+    @Test
+    @DisplayName("Comparaison des avis refuse un critère invalide")
+    void testComparerParAvisCritereInvalide() {
+        CoursController controller = new CoursController();
+        CoursService service = mock(CoursService.class);
+        injectCoursService(controller, service);
+
+        Context ctx = mock(Context.class);
+        CoursController.RequeteComparaisonAvis req = new CoursController.RequeteComparaisonAvis();
+        req.idsCours = new String[]{"IFT2255"};
+        req.critere = "popularite";
+
+        when(ctx.bodyAsClass(CoursController.RequeteComparaisonAvis.class)).thenReturn(req);
+
+        controller.comparerParAvis(ctx);
+
+        verify(ctx).status(400);
+        verify(ctx).json("Critère invalide. Les valeurs possibles sont difficulte et charge.");
+        verifyNoInteractions(service);
+    }
+
+    private void injectCoursService(CoursController controller, CoursService service) {
+        try {
+            Field field = CoursController.class.getDeclaredField("coursService");
+            field.setAccessible(true);
+            field.set(controller, service);
+        } catch (Exception e) {
+            fail(e);
+        }
+    }
 }

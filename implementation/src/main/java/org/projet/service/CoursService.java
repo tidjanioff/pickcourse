@@ -505,76 +505,43 @@ float moyenneAvisDifficulte = 0;
     }
 
     /**
-     * Compare des cours en fonction de la difficulté perçue,
-     * basée sur les avis des étudiants.
+     * Compare des cours en fonction d'un critère issu des avis étudiants.
      *
      * @param idsCours identifiants des cours à comparer.
-     * @return tableau contenant la moyenne de difficulté pour chaque cours.
+     * @param critere  critère à comparer: {@code difficulte} ou {@code charge}.
+     * @return tableau contenant la moyenne du critère pour chaque cours.
      */
-    public List<List<String>> comparerCoursParNoteDifficulteAvis(String[] idsCours) {
-        List<List<String>> result = new ArrayList<>();
-
-        for (String id : idsCours) {
-            if (!validateIdCours(id)) {
-                System.out.println("Cours non valide : " + id);
-                continue; // On passe au suivant au lieu de return null
-            }
-
-            List<String> ligne = new ArrayList<>();
-            ligne.add(id); // Ajouter le sigle du cours
-
-            try {
-                List<Avis> avis = avisService.getAvisParCours(id); // récupère les avis pour ce cours
-                if (avis == null || avis.isEmpty()) {
-                    ligne.add("Pas d'avis");
-                } else {
-                    float sum = 0;
-                    for (Avis av : avis) {
-                        sum += av.getNoteDifficulte();
-                    }
-                    float moyenne = sum / avis.size();
-                    ligne.add(String.format("%.2f", moyenne)); // ajouter la moyenne formatée
-                }
-            } catch (Exception e) {
-                ligne.add("Erreur récupération avis");
-                e.printStackTrace();
-            }
-
-            result.add(ligne);
+    public List<List<String>> comparerCoursParAvis(String[] idsCours, String critere) {
+        if (!"difficulte".equalsIgnoreCase(critere) && !"charge".equalsIgnoreCase(critere)) {
+            throw new IllegalArgumentException("Critère d'avis invalide");
         }
 
-        return result;
-    }
-    /**
-    * Compare des cours en fonction de la charge de travail perçue,
-    * basée sur les avis des étudiants.
-    *
-    * @param idsCours identifiants des cours à comparer.
-    * @return tableau contenant la moyenne de charge de travail pour chaque cours.
-    */
-    public List<List<String>> comparerCoursParChargeTravailAvis(String[] idsCours) {
         List<List<String>> result = new ArrayList<>();
 
         for (String id : idsCours) {
             if (!validateIdCours(id)) {
                 System.out.println("Cours non valide : " + id);
-                continue; // passer au suivant si le cours n'est pas valide
+                continue;
             }
 
             List<String> ligne = new ArrayList<>();
-            ligne.add(id); // Ajouter le sigle du cours
+            ligne.add(id);
 
             try {
-                List<Avis> avis = avisService.getAvisParCours(id); // récupère les avis pour ce cours
+                List<Avis> avis = avisService.getAvisParCours(id);
                 if (avis == null || avis.isEmpty()) {
                     ligne.add("Pas d'avis");
                 } else {
                     float sum = 0;
                     for (Avis av : avis) {
-                        sum += av.getNoteChargeTravail(); // utiliser noteChargeTravail
+                        if ("difficulte".equalsIgnoreCase(critere)) {
+                            sum += av.getNoteDifficulte();
+                        } else {
+                            sum += av.getNoteChargeTravail();
+                        }
                     }
                     float moyenne = sum / avis.size();
-                    ligne.add(String.format("%.2f", moyenne)); // ajouter la moyenne formatée
+                    ligne.add(String.format("%.2f", moyenne));
                 }
             } catch (Exception e) {
                 ligne.add("Erreur récupération avis");

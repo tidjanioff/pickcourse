@@ -56,10 +56,8 @@ public class Main {
 
         // #9.2 Avec le catalogue seul
         app.post("/cours/comparer", coursController::comparerCours);
-        // par difficulté avis
-        app.post("/cours/comparer/avis/difficulte", coursController::comparerParDifficulteAvis);
-        // par charge de travail avis.
-        app.post("/cours/comparer/avis/charge", coursController::comparerParChargeAvis);
+        // par avis étudiants
+        app.post("/cours/comparer/avis", coursController::comparerParAvis);
     
 
         // #10 Créer un ensemble de cours et générer l'horaire correspondant + détection de conflits horaires
