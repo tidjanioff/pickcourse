@@ -1,14 +1,8 @@
 package org.projet.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.projet.model.Avis;
+import org.projet.repository.AvisRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 /**
  * Service responsable de la gestion des avis étudiants.
@@ -17,30 +11,18 @@ import java.util.List;
  */
 public class AvisService {
     private static AvisService instance;
-    private final File fichier = new File("Avis.json");
-    private final ObjectMapper mapper = new ObjectMapper();
-    private List<Avis> avisStockes;
+    private final AvisRepository avisRepository;
 
     /**
-     * Cette méthode permet de charger le fichier JSON des avis ( Avis.json) lors de l'utilisation de l'instance
+     * Cette méthode permet d'initialiser le repository d'avis lors de l'utilisation de l'instance
      * de AvisService.
      */
     private AvisService(){
-        // Si le fichier existe, on le récupère et on stocke le contenu dans avisStockes.
+        this(new AvisRepository());
+    }
 
-        if(fichier.exists()) {
-            try {
-                avisStockes = mapper.readValue(fichier, new TypeReference<List<Avis>>() {});
-            } catch (IOException e) {
-                System.out.println("Erreur lecture fichier avis.json, initialisation vide");
-                e.printStackTrace();
-                avisStockes = new ArrayList<>();
-            }
-        }
-        // Si le fichier n'existe pas, on initialise une liste vide ( on entrera plus jamais dans ce cas vu que le fichier existe déjà).
-        else {
-            avisStockes = new ArrayList<>();
-        }
+    AvisService(AvisRepository avisRepository) {
+        this.avisRepository = avisRepository;
     }
 
     /**
@@ -108,27 +90,16 @@ public class AvisService {
                                              String commentaire) {
         this.validateAvis(sigle, prof, noteDifficulte, noteQualite, commentaire);
 
-        try {
-            //  Recharger le fichier à chaque écriture
-            if (fichier.exists()) {
-                avisStockes = mapper.readValue(fichier, new TypeReference<List<Avis>>() {});
-            }
+        Avis avis = new Avis(
+                sigle,
+                prof,
+                noteQualite,
+                noteDifficulte,
+                commentaire,
+                true
+        );
 
-            Avis avis = new Avis(
-                    sigle,
-                    prof,
-                    noteQualite,
-                    noteDifficulte,
-                    commentaire,
-                    true
-            );
-
-            avisStockes.add(avis);
-            mapper.writeValue(fichier, avisStockes);
-
-        } catch (IOException e) {
-            throw new RuntimeException("Erreur enregistrer avis", e);
-        }
+        avisRepository.insert(avis);
     }
 
 
@@ -143,14 +114,7 @@ public class AvisService {
             throw new IllegalArgumentException("Cours inexistant");
         }
 
-        // on parcourt avisStockes à la recherche d'avis ayant pour id de cours ce cours.
-        List<Avis> avisCours = new ArrayList<>();
-        for (Avis avis : avisStockes) {
-            if(avis.getSigleCours().equals(sigle)){
-                avisCours.add(avis);
-            }
-        }
-        return avisCours;
+        return avisRepository.findBySigleCours(sigle);
 
     }
 
@@ -159,11 +123,6 @@ public class AvisService {
      * @return la liste de tous les avis.
      */
     public List<Avis> getAllAvis(){
-        List<Avis> avisCours = new ArrayList<>();
-        for (Avis avis : avisStockes) {
-                avisCours.add(avis);
-
-        }
-        return avisCours;
+        return avisRepository.findAll();
     }
 }

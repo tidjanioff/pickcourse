@@ -2,6 +2,7 @@ package org.projet;
 
 import io.javalin.Javalin;
 
+import org.projet.config.DatabaseConfig;
 import org.projet.controller.AvisController;
 import org.projet.controller.CoursController;
 
@@ -15,6 +16,8 @@ public class Main {
      * @param args arguments
      */
     public static void main(String[] args) {
+        DatabaseConfig.migrate();
+
         CoursController coursController = new CoursController();
         AvisController avisController = new AvisController();
         var app = Javalin.create().start(7070);
