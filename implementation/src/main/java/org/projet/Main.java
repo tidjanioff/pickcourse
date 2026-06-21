@@ -23,7 +23,10 @@ public class Main {
         AvisController avisController = new AvisController();
         AdminController adminController = new AdminController();
         var app = Javalin.create(config -> config.bundledPlugins.enableCors(cors -> {
-            cors.addRule(rule -> rule.anyHost());
+            cors.addRule(rule -> rule.allowHost(
+                "https://cadence-ten-beta.vercel.app",
+                "http://localhost:5173"
+            ));
         })).start(7070);
         app.post("/admin/sync", adminController::syncCatalog);
         // #1 Rechercher des cours 
