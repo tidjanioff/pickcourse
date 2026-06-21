@@ -3,9 +3,9 @@ package org.projet;
 import io.javalin.Javalin;
 
 import org.projet.config.DatabaseConfig;
+import org.projet.controller.AdminController;
 import org.projet.controller.AvisController;
 import org.projet.controller.CoursController;
-import org.projet.service.CatalogSyncScheduler;
 
 /**
  * Cette classe permet de définir les routes pour notre API et lancer cette dernière.
@@ -18,11 +18,12 @@ public class Main {
      */
     public static void main(String[] args) {
         DatabaseConfig.migrate();
-        new CatalogSyncScheduler().start();
 
         CoursController coursController = new CoursController();
         AvisController avisController = new AvisController();
+        AdminController adminController = new AdminController();
         var app = Javalin.create().start(7070);
+        app.post("/admin/sync", adminController::syncCatalog);
         // #1 Rechercher des cours 
         app.post("/cours/rechercher", coursController::rechercherCours);
 

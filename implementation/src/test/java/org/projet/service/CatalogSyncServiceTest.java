@@ -95,7 +95,7 @@ class CatalogSyncServiceTest {
     }
 
     @Test
-    void syncAllUtiliseLeSeedLocalSiPlanifiumEchoueEtCacheVide() throws Exception {
+    void syncAllNeSeedePasLeCacheQuandPlanifiumEchoue() throws Exception {
         truncateCatalog();
         server.stop(0);
         server = startPlanifiumStub(malformedProgramsResponse(), directCoursesResponseWithNewIds());
@@ -103,10 +103,11 @@ class CatalogSyncServiceTest {
 
         new CatalogSyncService(cacheRepository).syncAll();
 
-        assertEquals(5, coursRepository.getAllPrograms().size());
-        assertEquals(10, coursRepository.getAllCoursesId().orElseThrow().size());
+        assertEquals(0, coursRepository.getAllPrograms().size());
+        assertEquals(2, coursRepository.getAllCoursesId().orElseThrow().size());
         assertTrue(coursRepository.getAllCoursesId().orElseThrow().contains("IFT3000"));
         assertTrue(coursRepository.getAllCoursesId().orElseThrow().contains("IFT3999"));
+        assertTrue(coursRepository.getAllCoursesId().orElseThrow().stream().noneMatch("IFT2255"::equals));
         assertEquals(1, coursRepository.getCourseBy("id", "IFT3000", "true", "A25")
                 .orElseThrow()
                 .get(0)
@@ -120,7 +121,7 @@ class CatalogSyncServiceTest {
     }
 
     @Test
-    void syncAllNeRemplacePasUnCacheExistantParLeSeedLocal() throws Exception {
+    void syncAllConserveLeCacheExistantQuandPlanifiumEchoue() throws Exception {
         server.stop(0);
         server = startPlanifiumStub(malformedProgramsResponse(), directCoursesResponseSingle());
         System.setProperty("planifium.base", "http://localhost:" + server.getAddress().getPort());
