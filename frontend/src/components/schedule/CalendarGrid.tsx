@@ -4,8 +4,18 @@ import type { ScheduleBlock, ScheduleConflict, ScheduleOption } from '../../type
 import { COURSE_COLORS } from './colors'
 
 const HOUR_HEIGHT = 64
-const DAY_NAMES: Record<string, string> = { Lu: 'Monday', Ma: 'Tuesday', Me: 'Wednesday', Je: 'Thursday', Ve: 'Friday', Sa: 'Saturday' }
-const DAY_ORDER = ['Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa']
+const DAY_NAMES: Record<string, string> = { Lu: 'Monday', Ma: 'Tuesday', Me: 'Wednesday', Je: 'Thursday', Ve: 'Friday', Sa: 'Saturday', Di: 'Sunday' }
+const WEEKDAY_BASELINE = ['Lu', 'Ma', 'Me', 'Je', 'Ve']
+const DAY_ORDER = [...WEEKDAY_BASELINE, 'Sa', 'Di']
+const DAY_ALIASES: Record<string, string> = {
+  lu: 'Lu', lun: 'Lu', lundi: 'Lu', mon: 'Lu', monday: 'Lu',
+  ma: 'Ma', mar: 'Ma', mardi: 'Ma', tue: 'Ma', tuesday: 'Ma',
+  me: 'Me', mer: 'Me', mercredi: 'Me', wed: 'Me', wednesday: 'Me',
+  je: 'Je', jeu: 'Je', jeudi: 'Je', thu: 'Je', thursday: 'Je',
+  ve: 'Ve', ven: 'Ve', vendredi: 'Ve', fri: 'Ve', friday: 'Ve',
+  sa: 'Sa', sam: 'Sa', samedi: 'Sa', sat: 'Sa', saturday: 'Sa',
+  di: 'Di', dim: 'Di', dimanche: 'Di', sun: 'Di', sunday: 'Di',
+}
 interface CalendarEvent {
   courseId: string
   day: string
@@ -16,7 +26,11 @@ interface CalendarEvent {
 
 export function CalendarGrid({ option, courses }: { option: ScheduleOption; courses: Course[] }) {
   const events = toEvents(option.horaire)
-  const days = events.some((event) => event.day === 'Sa') ? DAY_ORDER : DAY_ORDER.slice(0, 5)
+  const observedDays = [...new Set(events.map((event) => event.day))]
+  const additionalDays = observedDays
+    .filter((day) => !WEEKDAY_BASELINE.includes(day))
+    .sort((left, right) => daySortIndex(left) - daySortIndex(right))
+  const days = [...WEEKDAY_BASELINE, ...additionalDays]
   const minMinutes = events.length > 0 ? Math.floor(Math.min(...events.map((event) => event.start)) / 60) * 60 : 8 * 60
   const maxMinutes = events.length > 0 ? Math.ceil(Math.max(...events.map((event) => event.end)) / 60) * 60 : 17 * 60
   const totalHeight = ((maxMinutes - minMinutes) / 60) * HOUR_HEIGHT
@@ -27,14 +41,14 @@ export function CalendarGrid({ option, courses }: { option: ScheduleOption; cour
       <div className="min-w-[760px]">
         <div className="grid border-b border-primary/[0.08]" style={{ gridTemplateColumns: `4.5rem repeat(${days.length}, minmax(0, 1fr))` }}>
           <div />
-          {days.map((day) => <div className="pb-4 text-center text-xs font-semibold text-secondary" key={day}>{DAY_NAMES[day]}</div>)}
+          {days.map((day) => <div className="pb-4 text-center text-xs font-semibold text-secondary" key={day}>{DAY_NAMES[day] ?? day}</div>)}
         </div>
         <div className="grid" style={{ gridTemplateColumns: `4.5rem repeat(${days.length}, minmax(0, 1fr))` }}>
           <div className="relative" style={{ height: totalHeight }}>
             {hours.map((minutes, index) => <span className="absolute right-3 -translate-y-1/2 font-mono text-[10px] text-secondary" key={minutes} style={{ top: index * HOUR_HEIGHT }}>{formatTime(minutes)}</span>)}
           </div>
           {days.map((day) => (
-            <div className="relative border-l border-primary/[0.07]" key={day} style={{ height: totalHeight, backgroundImage: `repeating-linear-gradient(to bottom, transparent 0, transparent ${HOUR_HEIGHT - 1}px, rgba(29,29,31,0.06) ${HOUR_HEIGHT - 1}px, rgba(29,29,31,0.06) ${HOUR_HEIGHT}px)` }}>
+            <div className="relative border-l border-primary/[0.07]" key={day} style={{ height: totalHeight, backgroundImage: `repeating-linear-gradient(to bottom, transparent 0, transparent ${HOUR_HEIGHT - 1}px, var(--color-grid-line) ${HOUR_HEIGHT - 1}px, var(--color-grid-line) ${HOUR_HEIGHT}px)` }}>
               {events.filter((event) => event.day === day).map((event, index) => (
                 <CalendarBlock conflict={matchingConflict(event, option.conflits)} course={courses.find((course) => course.id === event.courseId)} courseIndex={courses.findIndex((course) => course.id === event.courseId)} event={event} key={`${event.courseId}-${event.time}-${index}`} minMinutes={minMinutes} option={option} />
               ))}
@@ -83,17 +97,38 @@ function toEvents(schedule: Record<string, ScheduleBlock[]>): CalendarEvent[] {
     const start = parseTime(startText)
     const end = parseTime(endText)
     if (start === null || end === null || end <= start) return []
-    const days = rawDays.replaceAll('[', '').replaceAll(']', '').split(',').map((day) => day.trim()).filter((day) => DAY_ORDER.includes(day))
+    const days = parseDays(rawDays)
     return days.map((day) => ({ courseId, day, start, end, time }))
   }))
 }
 
 function matchingConflict(event: CalendarEvent, conflicts: ScheduleConflict[]) {
   return conflicts.find((conflict) => {
-    const days = conflict.jour.replaceAll('[', '').replaceAll(']', '').split(',').map((day) => day.trim())
+    const days = parseDays(conflict.jour)
     const [start, end] = conflict.intervalle.split('-').map(parseTime)
     return days.includes(event.day) && conflict.cours.includes(event.courseId) && start !== null && end !== null && event.start < end && start < event.end
   })
+}
+
+function parseDays(rawDays: string) {
+  return rawDays
+    .replaceAll('[', '')
+    .replaceAll(']', '')
+    .split(',')
+    .map(normalizeDay)
+    .filter(Boolean)
+}
+
+function normalizeDay(value: string) {
+  const trimmed = value.trim()
+  if (!trimmed) return ''
+  const key = trimmed.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replaceAll('.', '')
+  return DAY_ALIASES[key] ?? trimmed
+}
+
+function daySortIndex(day: string) {
+  const index = DAY_ORDER.indexOf(day)
+  return index === -1 ? DAY_ORDER.length : index
 }
 
 function parseTime(value: string): number | null {

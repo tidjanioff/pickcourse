@@ -6,10 +6,17 @@ export default {
     extend: {
       colors: {
         background: 'var(--color-background)',
+        surface: 'var(--color-surface)',
         primary: 'var(--color-text-primary)',
         secondary: 'var(--color-text-secondary)',
         accent: 'var(--color-accent)',
+        'accent-hover': 'var(--color-accent-hover)',
+        'accent-soft': 'var(--color-accent-soft)',
+        'accent-ring': 'var(--color-accent-ring)',
         conflict: 'var(--color-conflict)',
+        line: 'var(--color-border)',
+        'primary-hover': 'var(--color-primary-hover)',
+        'primary-ring': 'var(--color-primary-ring)',
       },
       fontFamily: {
         sans: ['-apple-system', 'SF Pro Display', 'Inter', 'sans-serif'],
@@ -26,6 +33,7 @@ export default {
       },
       boxShadow: {
         card: '0 24px 80px rgba(29, 29, 31, 0.08)',
+        soft: '0 12px 40px rgba(29, 29, 31, 0.06)',
       },
     },
   },

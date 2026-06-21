@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import {
   checkEligibility,
   createReview,
@@ -10,11 +10,15 @@ import {
   type EligibilityResult,
 } from '../api/courseDetails'
 import { getCourse } from '../api/courses'
-import type { Course } from '../types/course'
+import { AppHeader } from '../components/ui/AppHeader'
+import { InlineLoading, StatusState } from '../components/ui/StatusState'
+import { SectionHeading } from '../components/ui/Typography'
+import type { Course, CourseDetailNavigationState, ScheduleDraft, ScheduleNavigationState } from '../types/course'
 
-const inputClass = 'mt-2 w-full rounded-card border border-primary/10 bg-background px-4 py-3.5 text-base text-primary outline-none transition placeholder:text-secondary/70 focus:border-accent/40 focus:ring-4 focus:ring-accent/10'
+const inputClass = 'field mt-2 w-full'
 
 export function CourseDetailPage() {
+  const location = useLocation()
   const { id = '' } = useParams()
   const courseId = decodeURIComponent(id).toUpperCase()
   const [course, setCourse] = useState<Course | null>(null)
@@ -71,52 +75,77 @@ export function CourseDetailPage() {
     return () => controller.abort()
   }, [courseId])
 
-  if (isLoading) return <PageStatus message="Loading course…" loading />
+  if (isLoading) return <FullPageStatus loading title="Loading course…" />
 
   if (courseError || !course) {
     return (
-      <PageStatus
-        message="We couldn't find that course."
+      <FullPageStatus
+        title="We couldn't find that course."
         detail="Check the course code or return to search."
         action={<Link className="font-semibold text-accent" to="/">Back to search</Link>}
       />
     )
   }
 
-  return (
-    <main className="min-h-screen px-5 pb-24 pt-7 sm:px-8 sm:pt-9">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between" aria-label="Primary navigation">
-        <Link className="rounded-md text-xl font-semibold tracking-[-0.03em] text-primary outline-none focus-visible:ring-4 focus-visible:ring-accent/20" to="/">
-          Cadence<span className="text-accent">.</span>
-        </Link>
-        <Link className="rounded-full px-3 py-2 text-sm font-medium text-secondary outline-none transition hover:text-primary focus-visible:ring-4 focus-visible:ring-accent/20" to="/">
-          ← All courses
-        </Link>
-      </nav>
+  const scheduleDraft = getScheduleDraft(location.state)
+  const selectedCourses = mergeCourses(scheduleDraft?.selectedCourses ?? [], course)
+  const scheduleState = {
+    selectedCourses,
+    semester: scheduleDraft?.semester ?? 'A25',
+  } satisfies ScheduleNavigationState
 
-      <header className="reveal mx-auto max-w-5xl pb-20 pt-20 sm:pb-28 sm:pt-28">
+  return (
+    <main className="page-shell">
+      <AppHeader action={
+        <Link
+          className="rounded-full px-3 py-2 text-sm font-medium text-secondary outline-none transition hover:text-primary focus-visible:ring-4 focus-visible:ring-accent/20"
+          state={scheduleDraft ? { selectedCourses: scheduleDraft.selectedCourses, semester: scheduleDraft.semester } satisfies ScheduleNavigationState : undefined}
+          to={scheduleDraft ? '/schedule' : '/'}
+        >
+          <span className="sm:hidden">← Back</span>
+          <span className="hidden sm:inline">{scheduleDraft ? '← Back to schedule' : '← All courses'}</span>
+        </Link>
+      } />
+
+      <header className="reveal mx-auto max-w-5xl pb-20 pt-24 sm:pb-24 sm:pt-32">
         <div className="flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-end">
           <div>
             <p className="font-mono text-xl font-semibold tracking-[0.08em] text-accent sm:text-2xl">{course.id}</p>
-            <h1 className="mt-5 max-w-4xl text-5xl font-semibold leading-[0.98] tracking-[-0.055em] text-primary sm:text-7xl">{course.name}</h1>
+            <h1 className="mt-5 max-w-4xl text-5xl font-semibold leading-[0.97] tracking-[-0.055em] text-primary sm:text-7xl lg:text-[5.25rem]">{course.name}</h1>
           </div>
           <span className="shrink-0 rounded-full bg-primary/[0.05] px-4 py-2 font-mono text-sm text-primary">{course.credits} credits</span>
         </div>
         <p className="mt-9 max-w-3xl text-lg leading-8 text-secondary sm:text-xl sm:leading-9">
           {course.description || 'A course description is not available yet.'}
         </p>
-        <Link className="mt-10 inline-flex items-center rounded-full bg-accent px-7 py-4 text-sm font-semibold text-white outline-none transition hover:-translate-y-0.5 hover:bg-accent/90 focus-visible:ring-4 focus-visible:ring-accent/30" to="/schedule">
+        <Link
+          className="button-primary mt-10 inline-flex items-center"
+          state={scheduleState}
+          to="/schedule"
+        >
           Add to schedule <span className="ml-2" aria-hidden="true">→</span>
         </Link>
       </header>
 
-      <div className="mx-auto max-w-5xl space-y-28 sm:space-y-36">
+      <div className="mx-auto max-w-5xl space-y-24 sm:space-y-32">
         <EligibilitySection courseId={course.id} />
         <StatsSection difficulty={difficulty} popularity={popularity} hasError={statsError} />
         <ReviewsSection courseId={course.id} reviews={reviews} setReviews={setReviews} isLoading={reviewsLoading} hasError={reviewsError} />
       </div>
     </main>
   )
+}
+
+function getScheduleDraft(state: unknown): ScheduleDraft | null {
+  if (!state || typeof state !== 'object' || !('scheduleDraft' in state)) return null
+  const draft = (state as CourseDetailNavigationState).scheduleDraft
+  if (!draft || !Array.isArray(draft.selectedCourses) || typeof draft.semester !== 'string') return null
+  return draft
+}
+
+function mergeCourses(courses: Course[], courseToAdd: Course) {
+  if (courses.some((course) => course.id.toUpperCase() === courseToAdd.id.toUpperCase()) || courses.length >= 6) return courses
+  return [...courses, courseToAdd]
 }
 
 function EligibilitySection({ courseId }: { courseId: string }) {
@@ -144,7 +173,7 @@ function EligibilitySection({ courseId }: { courseId: string }) {
   return (
     <section aria-labelledby="eligibility-heading">
       <SectionHeading eyebrow="Plan with confidence" title="Check your eligibility." description="Enter the courses you have completed and your current study cycle." id="eligibility-heading" />
-      <div className="mt-10 rounded-panel border border-primary/[0.06] bg-white p-6 shadow-[0_16px_50px_rgba(29,29,31,0.05)] sm:p-9">
+      <div className="surface-card mt-10 p-6 sm:p-8">
         <form className="grid gap-5 sm:grid-cols-[1fr_10rem_auto] sm:items-end" onSubmit={handleSubmit}>
           <label className="text-sm font-medium text-primary">
             Completed courses
@@ -156,12 +185,12 @@ function EligibilitySection({ courseId }: { courseId: string }) {
               {[1, 2, 3, 4].map((value) => <option key={value} value={value}>Cycle {value}</option>)}
             </select>
           </label>
-          <button className="rounded-card bg-primary px-6 py-4 text-sm font-semibold text-white outline-none transition hover:bg-primary/85 focus-visible:ring-4 focus-visible:ring-primary/20 disabled:opacity-50" disabled={isChecking} type="submit">
+          <button className="button-secondary py-4" disabled={isChecking} type="submit">
             {isChecking ? 'Checking…' : 'Check eligibility'}
           </button>
         </form>
         {result && (
-          <div className={`mt-6 rounded-card border px-5 py-4 text-sm leading-6 ${result.eligible ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-amber-200 bg-amber-50 text-amber-950'}`} role="status">
+          <div className={`mt-6 rounded-card border px-5 py-4 text-sm leading-6 text-primary ${result.eligible ? 'border-accent/20 bg-accent/[0.06]' : 'border-conflict/20 bg-conflict/[0.05]'}`} role="status">
             <p className="font-semibold">{result.eligible ? 'You are eligible.' : 'Not eligible yet.'}</p>
             <p className="mt-1 opacity-80">{result.message}</p>
           </div>
@@ -223,7 +252,7 @@ function ReviewsSection({ courseId, reviews, setReviews, isLoading, hasError }: 
         {hasError && <InlineError message="Reviews are temporarily unavailable." />}
         {!isLoading && !hasError && reviews.length === 0 && <p className="rounded-panel bg-primary/[0.035] px-6 py-8 text-center text-sm text-secondary">No reviews yet. Be the first to share your experience.</p>}
         {reviews.map((review, index) => (
-          <article className="rounded-panel border border-primary/[0.06] bg-white p-6 sm:p-8" key={`${review.nomProfesseur}-${index}`}>
+          <article className="surface-card p-6 sm:p-8" key={`${review.nomProfesseur}-${index}`}>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h3 className="font-semibold text-primary">{review.nomProfesseur || 'Professor not specified'}</h3>
               <div className="flex gap-4 font-mono text-xs text-secondary">
@@ -249,8 +278,8 @@ function ReviewsSection({ courseId, reviews, setReviews, isLoading, hasError }: 
             <textarea className={`${inputClass} min-h-32 resize-y`} required value={comment} onChange={(event) => setComment(event.target.value)} placeholder="What should other students know?" />
           </label>
           <div className="flex flex-wrap items-center gap-4 sm:col-span-2">
-            <button className="rounded-full bg-accent px-7 py-4 text-sm font-semibold text-white outline-none transition hover:bg-accent/90 focus-visible:ring-4 focus-visible:ring-accent/30 disabled:opacity-50" disabled={isSubmitting || !comment.trim()} type="submit">{isSubmitting ? 'Submitting…' : 'Submit review'}</button>
-            {submitted && <p className="text-sm font-medium text-emerald-700" role="status">Thank you. Your review was submitted.</p>}
+            <button className="button-primary" disabled={isSubmitting || !comment.trim()} type="submit">{isSubmitting ? 'Submitting…' : 'Submit review'}</button>
+            {submitted && <p className="text-sm font-medium text-accent" role="status">Thank you. Your review was submitted.</p>}
             {submitError && <p className="text-sm text-conflict" role="alert">Your review could not be submitted. Please try again.</p>}
           </div>
         </form>
@@ -259,28 +288,20 @@ function ReviewsSection({ courseId, reviews, setReviews, isLoading, hasError }: 
   )
 }
 
-function SectionHeading({ eyebrow, title, description, id }: { eyebrow: string; title: string; description: string; id: string }) {
-  return <div><p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-accent">{eyebrow}</p><h2 className="mt-4 text-4xl font-semibold tracking-[-0.045em] text-primary sm:text-5xl" id={id}>{title}</h2><p className="mt-4 max-w-2xl text-lg leading-8 text-secondary">{description}</p></div>
-}
-
 function StatCard({ label, value, detail }: { label: string; value: string; detail: string | null }) {
-  return <article className="rounded-panel bg-primary/[0.035] p-7 sm:p-9"><p className="font-mono text-xs uppercase tracking-[0.16em] text-secondary">{label}</p><p className="mt-5 text-3xl font-semibold tracking-[-0.04em] text-primary">{value}</p><p className="mt-4 text-sm leading-6 text-secondary">{detail || 'Loading…'}</p></article>
+  return <article className="rounded-panel bg-primary/[0.035] p-6 sm:p-8"><p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-secondary">{label}</p><p className="mt-5 text-3xl font-semibold tracking-[-0.04em] text-primary">{value}</p><p className="mt-4 text-sm leading-6 text-secondary">{detail || 'Loading…'}</p></article>
 }
 
 function RatingSelect({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
   return <label className="text-sm font-medium text-primary">{label}<select className={inputClass} value={value} onChange={(event) => onChange(event.target.value)}>{[1, 2, 3, 4, 5].map((rating) => <option key={rating} value={rating}>{rating} / 5</option>)}</select></label>
 }
 
-function InlineLoading({ message }: { message: string }) {
-  return <div className="flex items-center justify-center gap-3 py-10 text-sm text-secondary"><span className="h-4 w-4 animate-spin rounded-full border-2 border-primary/10 border-t-accent" />{message}</div>
-}
-
 function InlineError({ message }: { message: string }) {
   return <p className="mt-6 rounded-card bg-primary/[0.035] px-5 py-4 text-sm text-secondary" role="status">{message}</p>
 }
 
-function PageStatus({ message, detail, action, loading = false }: { message: string; detail?: string; action?: React.ReactNode; loading?: boolean }) {
-  return <main className="grid min-h-screen place-items-center px-6 text-center"><div>{loading && <div className="mx-auto h-5 w-5 animate-spin rounded-full border-2 border-primary/10 border-t-accent" />}<h1 className={`${loading ? 'mt-5' : ''} text-2xl font-semibold text-primary`}>{message}</h1>{detail && <p className="mt-2 text-secondary">{detail}</p>}{action && <div className="mt-6">{action}</div>}</div></main>
+function FullPageStatus({ title, detail, action, loading = false }: { title: string; detail?: string; action?: React.ReactNode; loading?: boolean }) {
+  return <main className="page-shell"><AppHeader /><StatusState action={action} className="grid min-h-[70vh] place-content-center" detail={detail} loading={loading} title={title} /></main>
 }
 
 function difficultyLabel(message: string | null) {

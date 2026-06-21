@@ -4,3 +4,14 @@ export interface Course {
   description?: string
   credits: number
 }
+
+export interface ScheduleDraft {
+  selectedCourses: Course[]
+  semester: string
+}
+
+export type ScheduleNavigationState = ScheduleDraft
+
+export interface CourseDetailNavigationState {
+  scheduleDraft: ScheduleDraft
+}

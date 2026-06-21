@@ -4,10 +4,30 @@
 
 :root {
   --color-background: #fbfbfd;
+  --color-surface: #ffffff;
   --color-text-primary: #1d1d1f;
   --color-text-secondary: #86868b;
   --color-accent: #0071e3;
+  --color-accent-hover: #0066cc;
+  --color-accent-soft: rgba(0, 113, 227, 0.1);
+  --color-accent-ring: rgba(0, 113, 227, 0.3);
   --color-conflict: #ff3b30;
+  --color-border: rgba(29, 29, 31, 0.08);
+  --color-primary-hover: #343436;
+  --color-primary-ring: rgba(29, 29, 31, 0.2);
+  --color-grid-line: rgba(29, 29, 31, 0.06);
+  --color-course-1-bg: #eaf3ff;
+  --color-course-1-text: #075eae;
+  --color-course-2-bg: #eaf8f2;
+  --color-course-2-text: #166b4d;
+  --color-course-3-bg: #f4eeff;
+  --color-course-3-text: #6941a5;
+  --color-course-4-bg: #fff3e6;
+  --color-course-4-text: #9a5700;
+  --color-course-5-bg: #eaf7f8;
+  --color-course-5-text: #17656b;
+  --color-course-6-bg: #fceef3;
+  --color-course-6-text: #93425f;
   --radius-card: 16px;
   --radius-panel: 24px;
   font-family: -apple-system, "SF Pro Display", "Inter", sans-serif;
@@ -40,6 +60,72 @@ input {
 select,
 textarea {
   font: inherit;
+}
+
+@layer components {
+  .page-shell {
+    @apply min-h-screen px-5 pb-24 pt-7 sm:px-8 sm:pt-9;
+  }
+
+  .surface-card {
+    @apply rounded-panel border;
+    background: var(--color-surface);
+    border-color: var(--color-border);
+    box-shadow: 0 12px 40px rgba(29, 29, 31, 0.06);
+  }
+
+  .field {
+    @apply rounded-card border px-4 py-3.5 text-base outline-none transition;
+    background: var(--color-background);
+    border-color: var(--color-border);
+    color: var(--color-text-primary);
+  }
+
+  .field::placeholder {
+    color: var(--color-text-secondary);
+  }
+
+  .field:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 4px var(--color-accent-soft);
+  }
+
+  .button-primary {
+    @apply rounded-full px-7 py-4 text-sm font-semibold text-white outline-none transition disabled:cursor-not-allowed disabled:opacity-50;
+    background: var(--color-accent);
+  }
+
+  .button-primary:hover:not(:disabled) {
+    background: var(--color-accent-hover);
+    transform: translateY(-0.125rem);
+  }
+
+  .button-primary:focus-visible {
+    box-shadow: 0 0 0 4px var(--color-accent-ring);
+  }
+
+  .button-secondary {
+    @apply rounded-card px-6 py-3.5 text-sm font-semibold text-white outline-none transition disabled:cursor-not-allowed disabled:opacity-50;
+    background: var(--color-text-primary);
+  }
+
+  .button-secondary:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+  }
+
+  .button-secondary:focus-visible {
+    box-shadow: 0 0 0 4px var(--color-primary-ring);
+  }
+}
+
+@layer utilities {
+  .bg-surface {
+    background-color: var(--color-surface);
+  }
+
+  .shadow-soft {
+    box-shadow: 0 12px 40px rgba(29, 29, 31, 0.06);
+  }
 }
 
 .reveal {
