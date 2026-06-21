@@ -5,6 +5,9 @@
     "english": "EN",
     "french": "FR"
   },
+  "footer": {
+    "line": "© {{year}} Cadence. Powered by PickCourse. Built by Tidjani. All rights reserved."
+  },
   "landing": {
     "eyebrow": "Find your next course",
     "title": "Build a schedule with zero conflicts.",

@@ -5,6 +5,9 @@
     "english": "EN",
     "french": "FR"
   },
+  "footer": {
+    "line": "© {{year}} Cadence. Propulsé par PickCourse. Conçu par Tidjani. Tous droits réservés."
+  },
   "landing": {
     "eyebrow": "Trouvez votre prochain cours",
     "title": "Créez un horaire sans conflit.",

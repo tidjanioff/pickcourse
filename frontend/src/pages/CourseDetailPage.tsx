@@ -11,6 +11,7 @@ import {
   type EligibilityResult,
 } from '../api/courseDetails'
 import { getCourse } from '../api/courses'
+import { AppFooter } from '../components/ui/AppFooter'
 import { AppHeader } from '../components/ui/AppHeader'
 import { InlineLoading, StatusState } from '../components/ui/StatusState'
 import { SectionHeading } from '../components/ui/Typography'
@@ -97,7 +98,7 @@ export function CourseDetailPage() {
   } satisfies ScheduleNavigationState
 
   return (
-    <main className="page-shell">
+    <main className="page-shell flex flex-col">
       <AppHeader action={
         <Link
           className="rounded-full px-3 py-2 text-sm font-medium text-secondary outline-none transition hover:text-primary focus-visible:ring-4 focus-visible:ring-accent/20"
@@ -109,31 +110,35 @@ export function CourseDetailPage() {
         </Link>
       } />
 
-      <header className="reveal mx-auto max-w-5xl pb-20 pt-24 sm:pb-24 sm:pt-32">
-        <div className="flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-end">
-          <div>
-            <p className="font-mono text-xl font-semibold tracking-[0.08em] text-accent sm:text-2xl">{course.id}</p>
-            <h1 className={i18n.language.startsWith('fr') ? 'mt-5 max-w-4xl text-5xl font-semibold leading-[0.99] tracking-[-0.055em] text-primary sm:text-6xl lg:text-[4.75rem]' : 'mt-5 max-w-4xl text-5xl font-semibold leading-[0.97] tracking-[-0.055em] text-primary sm:text-7xl lg:text-[5.25rem]'}>{course.name}</h1>
+      <div className="flex-1">
+        <header className="reveal mx-auto max-w-5xl pb-20 pt-24 sm:pb-24 sm:pt-32">
+          <div className="flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-end">
+            <div>
+              <p className="font-mono text-xl font-semibold tracking-[0.08em] text-accent sm:text-2xl">{course.id}</p>
+              <h1 className={i18n.language.startsWith('fr') ? 'mt-5 max-w-4xl text-5xl font-semibold leading-[0.99] tracking-[-0.055em] text-primary sm:text-6xl lg:text-[4.75rem]' : 'mt-5 max-w-4xl text-5xl font-semibold leading-[0.97] tracking-[-0.055em] text-primary sm:text-7xl lg:text-[5.25rem]'}>{course.name}</h1>
+            </div>
+            <span className="shrink-0 rounded-full bg-primary/[0.05] px-4 py-2 font-mono text-sm text-primary">{t('courseDetail.hero.credits', { count: course.credits })}</span>
           </div>
-          <span className="shrink-0 rounded-full bg-primary/[0.05] px-4 py-2 font-mono text-sm text-primary">{t('courseDetail.hero.credits', { count: course.credits })}</span>
-        </div>
-        <p className="mt-9 max-w-3xl text-lg leading-8 text-secondary sm:text-xl sm:leading-9">
-          {course.description || t('courseDetail.descriptionFallback')}
-        </p>
-        <Link
-          className="button-primary mt-10 inline-flex items-center"
-          state={scheduleState}
-          to="/schedule"
-        >
-          {t('courseDetail.addToSchedule')} <span className="ml-2" aria-hidden="true">→</span>
-        </Link>
-      </header>
+          <p className="mt-9 max-w-3xl text-lg leading-8 text-secondary sm:text-xl sm:leading-9">
+            {course.description || t('courseDetail.descriptionFallback')}
+          </p>
+          <Link
+            className="button-primary mt-10 inline-flex items-center"
+            state={scheduleState}
+            to="/schedule"
+          >
+            {t('courseDetail.addToSchedule')} <span className="ml-2" aria-hidden="true">→</span>
+          </Link>
+        </header>
 
-      <div className="mx-auto max-w-5xl space-y-24 sm:space-y-32">
-        <EligibilitySection courseId={course.id} />
-        <StatsSection difficulty={difficulty} popularity={popularity} hasError={statsError} />
-        <ReviewsSection courseId={course.id} reviews={reviews} setReviews={setReviews} isLoading={reviewsLoading} hasError={reviewsError} />
+        <div className="mx-auto max-w-5xl space-y-24 sm:space-y-32">
+          <EligibilitySection courseId={course.id} />
+          <StatsSection difficulty={difficulty} popularity={popularity} hasError={statsError} />
+          <ReviewsSection courseId={course.id} reviews={reviews} setReviews={setReviews} isLoading={reviewsLoading} hasError={reviewsError} />
+        </div>
       </div>
+
+      <AppFooter />
     </main>
   )
 }
