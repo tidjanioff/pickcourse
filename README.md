@@ -1,240 +1,163 @@
-# PickCourse
+[Lire en français](README.fr.md)
 
-## Description du projet
+# Cadence
 
-PickCourse est une **plateforme d'aide au choix de cours** destinée aux étudiants de l'Université de Montréal.  
-Elle est accessible via une **API REST** (backend Java) et une **interface graphique** (JavaFX).
+**Build a workable course plan before registration.**
 
-<p align="center">
-  <img src="docs/images/pickCourseLogo.png" alt="PickCourse Logo" height="150">
-</p>
+[Live demo](https://cadence-ten-beta.vercel.app)
 
+Cadence is the product-facing frontend for the **PickCourse** backend and repository. The two names refer to the same system at different layers: Cadence is the user-facing product; PickCourse is the API and codebase identity.
 
+## What it does
 
+Cadence helps Université de Montréal students search the course catalog, inspect course details, and check eligibility against completed coursework. Students can assemble candidate course sets, generate conflict-free schedule options, and use crowdsourced difficulty, workload, and instructor reviews when making decisions.
 
-La plateforme combine :
+## Architecture
 
-- des **données officielles** (ex. informations et horaires issus de l'API Planifium, résultats académiques),
-- des **données inofficielles** collectées auprès des étudiants via **Discord** (avis, difficulté perçue, charge de travail).
-
-L'objectif est d'aider les étudiants à faire des **choix de cours éclairés**, en leur permettant notamment de :
-
-- rechercher des cours (par sigle / nom / description),
-- consulter les cours d'un programme,
-- voir les cours offerts pour un trimestre donné,
-- vérifier l'éligibilité (prérequis, etc.),
-- consulter des statistiques académiques (score, moyenne, popularité),
-- consulter et soumettre des avis étudiants,
-- générer un horaire pour un ensemble de cours et détecter les conflits,
-- afficher l'horaire d'un cours pour une session spécifique.
-
----
-## Vidéo de démonstration
-
-Une démonstration complète présentant l’API REST et l’interface graphique JavaFX :
-
-[![Video Demo](https://img.shields.io/badge/Watch-Video%20Demo-red?style=for-the-badge&logo=youtube)](https://youtu.be/AL3vs1haIUE)
-
----
-
-## Structure du projet
-
-Le dépôt est organisé comme suit :
-
-- **.github/workflows/**  
-  Configuration CI (exécution automatisée des tests).
-
-- **docs/**  
-  Rapport du projet (site MkDocs + thème Material).
-
-- **implementation/**  
-  Implémentation principale du projet :
-  - **API REST Java (Javalin)** + logique métier
-  - **Interface graphique JavaFX**
-  - **Bot Discord Python** (module complémentaire)
-
-- **mkdocs.yml**  
-  Configuration du site MkDocs.
-
-- **requirements.txt / requirements**  
-  Dépendances Python (bot / rapport selon votre configuration).
-
-> Certains dossiers (ex. `.idea`, `.history`) proviennent de l'environnement de développement ou du template MkDocs.
-
----
-
-## Organisation du code (implémentation)
-
-L'implémentation suit une organisation par responsabilités (backend REST / GUI / bot).
 ```text
-implementation/
-├── discord-bot-python/
-│   ├── main.py
-│   └── requirements.txt
-│
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   ├── client/
-│   │   │   │   ├── controller/
-│   │   │   │   ├── service/
-│   │   │   │   └── MainApp.java
-│   │   │   └── org/projet/
-│   │   │       ├── controller/
-│   │   │       ├── service/
-│   │   │       ├── repository/
-│   │   │       ├── model/
-│   │   │       ├── exception/
-│   │   │       └── Main.java
-│   │   └── resources/
-│   │       ├── historique_cours_prog_117510.csv
-│   │       └── PickCourse-logo.png
-│   └── test/
-│       └── java/org/projet/
-│           ├── config/
-│           ├── controller/
-│           ├── service/
-│           ├── repository/
-│           └── model/
+React + TypeScript             Javalin REST API                 PostgreSQL
+Vercel                         Railway                          Railway
+┌──────────────┐   HTTPS       ┌──────────────────┐   SQL       ┌─────────────────┐
+│ Cadence UI   │ ────────────> │ PickCourse API   │ ──────────> │ reviews         │
+│              │               │                  │             │ catalog cache   │
+└──────────────┘               └────────┬─────────┘             └─────────────────┘
+                                      │
+                                      │ manual sync + eligibility checks
+                                      ▼
+                               ┌──────────────────┐
+                               │ Planifium API    │
+                               └──────────────────┘
 ```
 
-### Backend (API REST) — `org.projet`
+The API serves course and schedule reads from a PostgreSQL catalog cache. An authenticated admin endpoint refreshes programs, courses, and schedules from Planifium; Flyway owns the database schema and Jdbi handles data access.
 
-- **controller/** : routes HTTP, validation d'entrée, réponses JSON.
-- **service/** : logique métier (éligibilité, comparaison, calculs, agrégation).
-- **repository/** : accès aux données / persistance.
-- **model/** : entités (cours, avis, programme, etc.).
-- **exception/** : exceptions personnalisées et gestion d'erreurs.
-- **Main.java** : point d'entrée du serveur Javalin.
+## Notable engineering decisions
 
-### Interface graphique (JavaFX) — `client`
+### Cache the catalog at the system boundary
 
-- **client/controller/** : contrôleurs UI.
-- **client/service/** : appels à l'API REST et logique côté interface.
-- **MainApp.java** : point d'entrée de l'application JavaFX.
+Planifium is an upstream dependency outside this project's control, and its availability and response shape have not been stable enough to place on every user request. Persisting the catalog in PostgreSQL decouples search and schedule generation from that dependency, gives the application predictable latency, and preserves the last usable dataset when an upstream synchronization pass fails.
 
-### Bot Discord (Python)
+### Degrade by dataset, not by application
 
-- **discord-bot-python/main.py** : logique du bot (commande `/avis`, etc.).
-- Les avis collectés sont récupérés côté backend et stockés (ex. `Avis.json` selon l'implémentation).
+Planifium's `/programs` endpoint currently returns an object shaped like `{"status_code": 500, "detail": "validation error"}` where the API contract requires a JSON array of programs. The sync process validates that shape and isolates each pass: programs may fail while courses continue through `/courses`, and schedules continue through `/schedules`. As a result, program and segment browsing can be incomplete without taking down course search, eligibility checks, or schedule construction.
 
----
+### Synchronize on demand
 
-## Tests de fonctionnalités
+Catalog synchronization is manual rather than scheduled. The underlying catalog changes roughly once per semester, so a continuously scheduled job would add compute, database writes, and upstream traffic without improving freshness in a meaningful way. An administrator triggers a refresh before the data is needed, particularly ahead of a demonstration or a new semester.
 
-Les fonctionnalités testées incluent :
+### Keep nested upstream data as JSONB in v1
 
-- voir les cours offerts dans un programme ;
-- voir les cours offerts pour un trimestre donné ;
-- vérifier l'éligibilité à un cours ;
-- voir les résultats académiques d'un cours ;
-- comparer des cours ;
-- créer un ensemble de cours ;
-- générer un horaire et détecter des conflits ;
-- voir l'horaire d'un cours pour un trimestre donné.
+Course, program, and schedule payloads contain nested structures whose schema is owned by Planifium. Cadence stores query-critical fields relationally while retaining complete upstream payloads in `JSONB`. This avoids premature normalization and a large join surface in v1, while leaving room to promote stable, frequently queried fields into relational columns later.
 
----
+## Tech stack
 
-## Exécution du rapport MkDocs
+### Frontend
 
-Le rapport est généré avec **MkDocs** à partir des fichiers Markdown présents dans `docs/`.
+- React 19 and TypeScript
+- Vite
+- React Router
+- Tailwind CSS
+- i18next / react-i18next
+- Vercel
 
-### 1) Se placer à la racine du projet
+### Backend
+
+- Java 17 and Javalin 6
+- PostgreSQL with Jdbi 3
+- Flyway database migrations
+- Jackson and Gson
+- Maven
+- JUnit 5, Mockito, and Testcontainers
+- Railway
+- Planifium as the upstream catalog and eligibility service
+
+## Screenshots
+
+### Landing
+
+![Cadence landing page with the course search field and matching results.](screenshots/landing-eng.png)
+
+*Search the catalog by course code or title.*
+
+### Course Detail
+
+![Cadence course detail page showing requirements, eligibility, and student reviews.](screenshots/details-eng.png)
+
+*Review course requirements and student feedback in one place.*
+
+### Schedule Builder
+
+![Cadence Schedule Builder displaying a conflict-free weekly timetable.](screenshots/schedule-eng.png)
+
+*Compare valid section combinations on a weekly calendar.*
+
+## Known limitations
+
+- Planifium's `/programs` endpoint is currently broken upstream. Program and segment browsing are affected; course search, eligibility checking, and schedule building remain available.
+- The Discord review-submission bot is inactive because its credentials are held by a collaborator. The website review flow is the primary submission path.
+- Course coverage follows Planifium's current dataset: the Université de Montréal Faculty of Arts and Sciences.
+
+## Local setup
+
+### Prerequisites
+
+- Java 17
+- Maven 3.9+
+- Node.js 20+ and npm
+- PostgreSQL 16 or a compatible PostgreSQL instance
+- Docker, only when running the backend integration tests that use Testcontainers
+
+### Backend
+
+Create an empty PostgreSQL database and provide the connection settings. Flyway applies the schema migrations when the API starts.
+
 ```bash
-cd pickcourse
+cd implementation
+
+export PICKCOURSE_DB_URL='jdbc:postgresql://localhost:5432/pickcourse'
+export PICKCOURSE_DB_USER='pickcourse'
+export PICKCOURSE_DB_PASSWORD='devpassword'
+export PICKCOURSE_ADMIN_TOKEN='replace-with-a-local-admin-token'
+
+mvn -DskipTests package
+java -jar target/IFT2255_Implementation-1.0-SNAPSHOT.jar
 ```
 
-### 2) Installer MkDocs (et le thème Material)
-```bash
-python3 -m pip install mkdocs mkdocs-material
-```
+The API listens on `http://localhost:7070`. If the database variables are omitted, the values shown above are the backend defaults. `PICKCOURSE_ADMIN_TOKEN` has no default and must be set to authorize catalog synchronization.
 
-Ou via un fichier de dépendances (si disponible) :
-```bash
-python3 -m pip install -r requirements.txt
-```
+Run the backend tests with Docker available:
 
-### 3) Lancer le serveur local
-```bash
-mkdocs serve
-```
-
-Puis ouvrir dans le navigateur :
-```
-http://127.0.0.1:8000/
-```
-
-### Problème courant : Unrecognised theme name: 'material'
-
-Si vous voyez :
-```
-ERROR - Config value 'theme': Unrecognised theme name: 'material'
-```
-
-Installez le thème Material :
-```bash
-python3 -m pip install mkdocs-material
-```
-
-Puis relancez :
-```bash
-mkdocs serve
-```
-
----
-
-## Lancer l'API REST (backend Java)
-
-À exécuter depuis le dossier `implementation/` (celui qui contient `pom.xml`).
 ```bash
 cd implementation
 mvn clean test
 ```
 
-Ensuite, démarrer le serveur en lançant la classe `Main.java` (IDE recommandé) :
-```
-implementation/src/main/java/org/projet/Main.java
-```
+### Frontend
 
-Le serveur écoute sur le port **7070**.
-
----
-
-## Lancer l'interface graphique (JavaFX)
-
-Assurez-vous que l'API REST tourne déjà (port 7070), puis :
 ```bash
-cd implementation
-mvn clean javafx:run
+cd frontend
+npm install
+
+printf 'VITE_API_BASE_URL=http://localhost:7070\n' > .env.local
+npm run dev
 ```
 
-**NB :** certaines actions ouvrent une fenêtre secondaire (ex. génération d'horaire).  
-Tant que cette fenêtre n'est pas fermée, la fenêtre principale peut rester figée.
+Vite serves the frontend at `http://localhost:5173`. `VITE_API_BASE_URL` should be the API origin without a trailing slash. Without an override, the frontend uses the deployed Railway API.
 
----
+For a production build:
 
-## Lancer le bot Discord
-
-1. Démarrer l'API REST (port 7070).
-
-2. Aller dans `implementation/discord-bot-python/`.
-
-3. Créer un fichier `.env` contenant :
-```
-TOKEN=VOTRE_TOKEN_DISCORD
-```
-
-4. Installer les dépendances et lancer le bot :
 ```bash
-cd implementation/discord-bot-python
-python3 -m pip install -r requirements.txt
-python3 main.py
+cd frontend
+npm run build
 ```
 
-Le bot (serveur **AvisPickCourse**) permet notamment de soumettre des avis via la commande `/avis`.
+## Admin catalog sync
 
----
+Start a catalog refresh with the authenticated admin endpoint:
 
-## Licence
+```bash
+curl -X POST http://localhost:7070/admin/sync \
+  -H "X-Admin-Token: $PICKCOURSE_ADMIN_TOKEN"
+```
 
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+A valid request returns `202 Accepted` with `Sync started`; synchronization continues asynchronously. The token in `X-Admin-Token` must exactly match the backend's `PICKCOURSE_ADMIN_TOKEN`. A full refresh can take **30-60 minutes or longer** because it traverses the catalog and schedule data, so trigger it ahead of a demo or semester update, not during one.
